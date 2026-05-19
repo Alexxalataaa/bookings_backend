@@ -7,12 +7,16 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { AuthGuard } from '../auth/auth.guard';
+
 
 @Controller('customers')
+@UseGuards(AuthGuard)
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
