@@ -19,8 +19,8 @@ export class PaymentsService {
 
     if (range) {
       const now = new Date();
-      let start: Date;
-      let end: Date;
+      let start: Date | undefined = undefined;
+      let end: Date | undefined = undefined;
 
       if (range === 'hoy') {
         start = new Date(now);
