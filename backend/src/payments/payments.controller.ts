@@ -8,6 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -21,8 +22,8 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get()
-  findAll() {
-    return this.paymentsService.findAll();
+  findAll(@Query('range') range?: string) {
+    return this.paymentsService.findAll(range);
   }
 
   @Get(':id')
