@@ -22,12 +22,12 @@ export class AuthGuard implements CanActivate {
     if (scheme !== 'Bearer' || !token) {
       throw new UnauthorizedException('Authorization inválida');
     }
-
-    if (!this.authService.validateToken(token)) {
+    const user = this.authService.validateToken(token);
+    if (!user) {
       throw new UnauthorizedException('No autorizado');
     }
 
-    // Nota: simple: no adjuntamos user
+    req['user'] = user;
     return true;
   }
 }
