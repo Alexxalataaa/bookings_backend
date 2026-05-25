@@ -2,6 +2,8 @@ import { Body, Controller, Post, Get, Patch, UseGuards, Req } from '@nestjs/comm
 import { ApiCreatedResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { Verify2faDto } from './dto/verify-2fa.dto';
 import { AuthGuard } from './auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -14,6 +16,18 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'Login de admin' })
   login(@Body() body: LoginDto) {
     return this.authService.login(body.username, body.password);
+  }
+
+  @Post('verify-register')
+  @ApiCreatedResponse({ description: 'Verificar código de confirmación de registro' })
+  verifyRegister(@Body() body: Verify2faDto) {
+    return this.authService.verifyRegister(body.tempToken, body.code);
+  }
+
+  @Post('register')
+  @ApiCreatedResponse({ description: 'Registro de usuario exitoso' })
+  register(@Body() body: RegisterDto) {
+    return this.authService.register(body.fullName, body.email, body.username, body.password);
   }
 
   @Get('profile')

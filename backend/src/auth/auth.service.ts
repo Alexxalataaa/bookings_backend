@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException, OnModuleInit } fr
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
 import { User, hashPassword } from './user.entity';
 
 @Injectable()
@@ -10,6 +11,9 @@ export class AuthService implements OnModuleInit {
 
   // Simple in-memory token store (stores userId and username)
   private readonly tokens = new Map<string, { userId: number; username: string; expiresAt: number }>();
+
+  // Simple in-memory registration verification store
+  private readonly tempRegisterCodes = new Map<string, { userId: number; code: string; expiresAt: number }>();
 
   constructor(
     @InjectRepository(User)
@@ -22,14 +26,71 @@ export class AuthService implements OnModuleInit {
     if (count === 0) {
       const defaultUser = new User();
       defaultUser.username = 'admin';
+      defaultUser.fullName = 'Administrador Principal';
+      defaultUser.email = 'admin@bookflow.com';
       defaultUser.passwordHash = hashPassword('1234');
+      defaultUser.isConfirmed = true;
       await this.userRepository.save(defaultUser);
-      console.log('Successfully seeded default user "admin" with password "1234"');
+      console.log('Successfully seeded default confirmed user "admin" with password "1234"');
+    } else {
+      // Ensure existing admin is confirmed
+      const admin = await this.userRepository.findOne({ where: { username: 'admin' } });
+      if (admin && !admin.isConfirmed) {
+        admin.isConfirmed = true;
+        await this.userRepository.save(admin);
+        console.log('Admin user status updated to isConfirmed = true');
+      }
+    }
+  }
+
+  private async send2faEmail(email: string, code: string) {
+    console.log(`\n==================================================`);
+    console.log(`🔑 CÓDIGO DE DOBLE FACTOR DE AUTENTICACIÓN (2FA):`);
+    console.log(`Para el correo: ${email}`);
+    console.log(`CÓDIGO: ${code}`);
+    console.log(`==================================================\n`);
+
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const info = await transporter.sendMail({
+        from: '"BookFlow Seguridad" <alexcalatayudpiquer@gmail.com>',
+        to: email,
+        subject: 'Tu código de confirmación de registro (2FA)',
+        text: `Hola, tu código de confirmación de registro de 6 dígitos es: ${code}. Expira en 5 minutos.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #0b0d11; color: #f8fafc; border-radius: 12px; max-width: 500px;">
+            <h2 style="color: #6366f1;">Confirmación de Registro en BookFlow</h2>
+            <p>Hola,</p>
+            <p>Gracias por registrarte en BookFlow. Tu código de verificación de 6 dígitos para confirmar tu cuenta es:</p>
+            <div style="font-size: 32px; font-weight: bold; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); padding: 15px; text-align: center; letter-spacing: 4px; color: #6366f1; border-radius: 8px; margin: 20px 0;">
+              ${code}
+            </div>
+            <p style="color: #94a3b8; font-size: 13px;">Este código expira en 5 minutos y es válido para un único uso.</p>
+          </div>
+        `,
+      });
+
+      console.log(`✅ Email enviado con éxito a ${email}: ${info.response}`);
+    } catch (err) {
+      console.error(`❌ Error al enviar email a ${email}:`, err);
     }
   }
 
   async login(username: string, password: string) {
-    const user = await this.userRepository.findOne({ where: { username: username.trim() } });
+    const trimmed = username.trim();
+    const user = await this.userRepository.findOne({
+      where: [
+        { username: trimmed },
+        { email: trimmed }
+      ]
+    });
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
@@ -39,10 +100,89 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
+    if (!user.isConfirmed) {
+      throw new UnauthorizedException('Por favor, confirma tu cuenta por correo electrónico antes de iniciar sesión');
+    }
+
+    // Generate actual JWT token directly
     const token = crypto.randomBytes(24).toString('hex');
-    const expiresAt = Date.now() + this.tokenTtlMs;
-    this.tokens.set(token, { userId: user.id, username: user.username, expiresAt });
+    const tokenExpiresAt = Date.now() + this.tokenTtlMs;
+    this.tokens.set(token, { userId: user.id, username: user.username, expiresAt: tokenExpiresAt });
+
     return { token };
+  }
+
+  async verifyRegister(tempToken: string, code: string) {
+    const entry = this.tempRegisterCodes.get(tempToken);
+    if (!entry) {
+      throw new UnauthorizedException('Sesión de verificación inválida o expirada');
+    }
+
+    if (Date.now() > entry.expiresAt) {
+      this.tempRegisterCodes.delete(tempToken);
+      throw new UnauthorizedException('El código de verificación ha expirado');
+    }
+
+    if (entry.code !== code.trim()) {
+      throw new UnauthorizedException('Código de verificación incorrecto');
+    }
+
+    // Confirm user
+    const user = await this.getUserById(entry.userId);
+    user.isConfirmed = true;
+    await this.userRepository.save(user);
+
+    // Invalidate session
+    this.tempRegisterCodes.delete(tempToken);
+
+    return { message: 'Registro verificado y confirmado con éxito' };
+  }
+
+  async register(fullName: string, email: string, username: string, password: string) {
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+    const trimmedFullName = fullName.trim();
+
+    if (!trimmedEmail) {
+      throw new ConflictException('El correo electrónico es requerido');
+    }
+
+    const existingUser = await this.userRepository.findOne({ where: { username: trimmedUsername } });
+    if (existingUser) {
+      throw new ConflictException('El nombre de usuario ya está en uso');
+    }
+
+    const existingEmail = await this.userRepository.findOne({ where: { email: trimmedEmail } });
+    if (existingEmail) {
+      throw new ConflictException('El correo electrónico ya está en uso');
+    }
+
+    const newUser = new User();
+    newUser.fullName = trimmedFullName;
+    newUser.email = trimmedEmail;
+    newUser.username = trimmedUsername;
+    newUser.passwordHash = hashPassword(password);
+    newUser.isConfirmed = false;
+
+    const savedUser = await this.userRepository.save(newUser);
+
+    // Generate random 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Generate temporary verification token
+    const tempToken = crypto.randomBytes(24).toString('hex');
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes TTL
+
+    this.tempRegisterCodes.set(tempToken, { userId: savedUser.id, code, expiresAt });
+
+    // Send email asynchronously
+    this.send2faEmail(savedUser.email, code);
+
+    return {
+      require2fa: true,
+      tempToken,
+      message: 'Código de verificación de registro enviado al correo electrónico'
+    };
   }
 
   validateToken(token: string): { userId: number; username: string } | null {
