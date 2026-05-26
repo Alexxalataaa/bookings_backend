@@ -21,26 +21,19 @@ export class AuthService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // Seed default user if no users exist
-    const count = await this.userRepository.count();
-    if (count === 0) {
-      const defaultUser = new User();
-      defaultUser.username = 'admin';
-      defaultUser.fullName = 'Administrador Principal';
-      defaultUser.email = 'admin@bookflow.com';
-      defaultUser.passwordHash = hashPassword('1234');
-      defaultUser.isConfirmed = true;
-      await this.userRepository.save(defaultUser);
-      console.log('Successfully seeded default confirmed user "admin" with password "1234"');
-    } else {
-      // Ensure existing admin is confirmed
-      const admin = await this.userRepository.findOne({ where: { username: 'admin' } });
-      if (admin && !admin.isConfirmed) {
-        admin.isConfirmed = true;
-        await this.userRepository.save(admin);
-        console.log('Admin user status updated to isConfirmed = true');
-      }
+    // Seed or update default admin user to have username "admin" and password "admin"
+    let admin = await this.userRepository.findOne({ where: { username: 'admin' } });
+    if (!admin) {
+      admin = new User();
+      admin.username = 'admin';
+      admin.fullName = 'Administrador Principal';
+      admin.email = 'admin@bookflow.com';
     }
+
+    admin.passwordHash = hashPassword('admin');
+    admin.isConfirmed = true;
+    await this.userRepository.save(admin);
+    console.log('Successfully seeded/updated default confirmed user "admin" with password "admin"');
   }
 
   private async send2faEmail(email: string, code: string) {
@@ -50,17 +43,20 @@ export class AuthService implements OnModuleInit {
     console.log(`CÓDIGO: ${code}`);
     console.log(`==================================================\n`);
 
+    const emailUser = process.env.EMAIL_USER || 'bookflow.alicantefutura@gmail.com';
+    const emailPass = process.env.EMAIL_PASS || 'mzkn nxzy uecr saki';
+
     try {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: emailUser,
+          pass: emailPass,
         },
       });
 
       const info = await transporter.sendMail({
-        from: '"BookFlow Seguridad" <alexcalatayudpiquer@gmail.com>',
+        from: `"BookFlow Seguridad" <${emailUser}>`,
         to: email,
         subject: 'Tu código de confirmación de registro (2FA)',
         text: `Hola, tu código de confirmación de registro de 6 dígitos es: ${code}. Expira en 5 minutos.`,
