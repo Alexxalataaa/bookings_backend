@@ -5,6 +5,8 @@ import { CustomersModule } from './customers/customers.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuthModule } from './auth/auth.module';
+import { BusinessesModule } from './businesses/businesses.module';
+import { ServicesModule } from './services/services.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -17,6 +19,8 @@ import { AppService } from './app.service';
       synchronize: true,
     }),
     AuthModule,
+    BusinessesModule,
+    ServicesModule,
     AppointmentsModule,
     CustomersModule,
     PaymentsModule,
@@ -26,4 +30,3 @@ import { AppService } from './app.service';
   providers: [AppService],
 })
 export class AppModule {}
-

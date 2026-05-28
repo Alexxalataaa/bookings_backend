@@ -9,12 +9,12 @@ import {
   ParseIntPipe,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { AuthGuard } from '../auth/auth.guard';
-
 
 @Controller('payments')
 @UseGuards(AuthGuard)
@@ -22,8 +22,16 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get()
-  findAll(@Query('range') range?: string) {
-    return this.paymentsService.findAll(range);
+  findAll(
+    @Req() req: any,
+    @Query('range') range?: string,
+    @Query('businessId') businessId?: string,
+  ) {
+    return this.paymentsService.findAll(
+      req.user,
+      range,
+      businessId ? Number(businessId) : undefined,
+    );
   }
 
   @Get(':id')

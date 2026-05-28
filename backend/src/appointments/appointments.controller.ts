@@ -7,6 +7,9 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -16,7 +19,6 @@ import {
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 
 @ApiTags('appointments')
@@ -27,11 +29,13 @@ export class AppointmentsController {
     private readonly appointmentsService: AppointmentsService,
   ) {}
 
-
   @Get()
   @ApiOkResponse({ description: 'Listado de reservas' })
-  findAll() {
-    return this.appointmentsService.findAll();
+  findAll(@Req() req: any, @Query('businessId') businessId?: string) {
+    return this.appointmentsService.findAll(
+      req.user,
+      businessId ? Number(businessId) : undefined,
+    );
   }
 
   @Get(':id')
@@ -42,8 +46,13 @@ export class AppointmentsController {
 
   @Post()
   @ApiCreatedResponse({ description: 'Reserva creada' })
-  create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    return this.appointmentsService.create(createAppointmentDto);
+  create(@Body() createAppointmentDto: CreateAppointmentDto, @Req() req: any) {
+    // Inject the logged-in user's ID into the booking creation flow
+    const data = {
+      ...createAppointmentDto,
+      userId: req.user.userId,
+    };
+    return this.appointmentsService.create(data);
   }
 
   @Patch(':id')

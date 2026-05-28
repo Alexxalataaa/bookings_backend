@@ -27,7 +27,7 @@ export class AuthController {
   @Post('register')
   @ApiCreatedResponse({ description: 'Registro de usuario exitoso' })
   register(@Body() body: RegisterDto) {
-    return this.authService.register(body.fullName, body.email, body.username, body.password);
+    return this.authService.register(body.fullName, body.email, body.username, body.password, body.role);
   }
 
   @Get('profile')
@@ -39,6 +39,9 @@ export class AuthController {
     return {
       id: user.id,
       username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
     };
   }
 
