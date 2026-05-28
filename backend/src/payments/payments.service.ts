@@ -12,7 +12,7 @@ export class PaymentsService {
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
     private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  ) { }
 
   async findAll(
     user: { userId: number; role: string; username: string },
@@ -23,7 +23,7 @@ export class PaymentsService {
 
     const query = this.paymentRepository.createQueryBuilder('payment')
       .leftJoinAndSelect('payment.business', 'business')
-      .order({ 'payment.date': 'DESC' });
+      .orderBy('payment.date', 'DESC');
 
     if (isSuperadmin) {
       if (businessId) {
@@ -56,7 +56,7 @@ export class PaymentsService {
         const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
         startOfWeek.setDate(diff);
         start = startOfWeek.toISOString().split('T')[0];
-        
+
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
         end = endOfWeek.toISOString().split('T')[0];

@@ -12,7 +12,7 @@ export class AppointmentsService {
     @InjectRepository(Appointment)
     private readonly appointmentsRepository: Repository<Appointment>,
     private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  ) { }
 
   async findAll(user: { userId: number; role: string; username: string }, businessId?: number) {
     const isSuperadmin = user.username === 'admin' || user.role === 'superadmin';
@@ -21,7 +21,8 @@ export class AppointmentsService {
       .leftJoinAndSelect('appointment.user', 'user')
       .leftJoinAndSelect('appointment.business', 'business')
       .leftJoinAndSelect('appointment.service', 'service')
-      .order({ 'appointment.date': 'ASC', 'appointment.time': 'ASC' });
+      .orderBy('appointment.date', 'ASC')
+      .addOrderBy('appointment.time', 'ASC');
 
     if (isSuperadmin) {
       if (businessId) {
@@ -31,7 +32,7 @@ export class AppointmentsService {
       // Must filter by businesses owned by this owner
       query.leftJoin('business.owner', 'owner')
         .andWhere('owner.id = :ownerId', { ownerId: user.userId });
-      
+
       if (businessId) {
         query.andWhere('appointment.businessId = :businessId', { businessId });
       }

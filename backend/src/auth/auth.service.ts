@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, OnModuleInit } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
@@ -392,7 +392,17 @@ export class AuthService implements OnModuleInit {
     }
 
     if (password && password.trim()) {
-      user.passwordHash = hashPassword(password);
+      const trimmedPassword = password.trim();
+      if (trimmedPassword.length < 8) {
+        throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
+      }
+      if (!/[0-9]/.test(trimmedPassword)) {
+        throw new BadRequestException('La contraseña debe contener al menos un número');
+      }
+      if (!/[^A-Za-z0-9\s]/.test(trimmedPassword)) {
+        throw new BadRequestException('La contraseña debe contener al menos un carácter especial');
+      }
+      user.passwordHash = hashPassword(trimmedPassword);
     }
 
     await this.userRepository.save(user);
