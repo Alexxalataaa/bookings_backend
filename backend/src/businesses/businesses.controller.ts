@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { BusinessesService } from './businesses.service';
 import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('businesses')
 export class BusinessesController {
@@ -12,12 +14,10 @@ export class BusinessesController {
   }
 
   @Get('all')
-  @UseGuards(AuthGuard)
-  async findAllAll(@Req() req: any) {
-    if (req.user.username === 'admin' || req.user.role === 'superadmin') {
-      return this.businessesService.findAllForSuperadmin();
-    }
-    return this.businessesService.findAll();
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('superadmin')
+  async findAllAll() {
+    return this.businessesService.findAllForSuperadmin();
   }
 
   @Get('my')
@@ -40,14 +40,14 @@ export class BusinessesController {
   @Patch(':id')
   @UseGuards(AuthGuard)
   async update(@Param('id') id: string, @Body() body: any, @Req() req: any) {
-    const isSuperadmin = req.user.username === 'admin' || req.user.role === 'superadmin';
+    const isSuperadmin = req.user.role === 'superadmin';
     return this.businessesService.update(Number(id), body, req.user.userId, isSuperadmin);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
   async delete(@Param('id') id: string, @Req() req: any) {
-    const isSuperadmin = req.user.username === 'admin' || req.user.role === 'superadmin';
+    const isSuperadmin = req.user.role === 'superadmin';
     return this.businessesService.delete(Number(id), req.user.userId, isSuperadmin);
   }
 }

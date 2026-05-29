@@ -7,6 +7,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AuthModule } from './auth/auth.module';
 import { BusinessesModule } from './businesses/businesses.module';
 import { ServicesModule } from './services/services.module';
+import { LogsModule } from './logs/logs.module';
+import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -25,6 +27,8 @@ import { AppService } from './app.service';
     CustomersModule,
     PaymentsModule,
     NotificationsModule,
+    LogsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
