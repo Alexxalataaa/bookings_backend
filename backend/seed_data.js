@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const { faker } = require('@faker-js/faker/locale/es');
+const { fakerES: faker } = require('@faker-js/faker');
 
 const dbPath = path.resolve(__dirname, 'data', 'database.sqlite');
 const db = new sqlite3.Database(dbPath);
@@ -12,6 +12,14 @@ const servicesByCategory = {
   'Deporte': ['Entrenamiento personal', 'Yoga', 'Pilates'],
   'Nutrición': ['Consulta nutricional', 'Dieta personalizada'],
   'Psicología': ['Terapia individual', 'Terapia de pareja'],
+};
+
+const categoryMapping = {
+  'Salud': 'health',
+  'Belleza': 'beauty',
+  'Deporte': 'sports',
+  'Nutrición': 'food',
+  'Psicología': 'people'
 };
 
 // Hashes SHA256
@@ -72,6 +80,9 @@ db.serialize(() => {
       const category = faker.helpers.arrayElement(categories);
       const name = `${category} ${faker.company.buzzNoun()} ${faker.number.int({ min: 1, max: 99 })}`;
       const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const keyword = categoryMapping[category] || 'business';
+      const uniqueImage = `https://loremflickr.com/800/600/${keyword}?random=${businessCount}`;
+
       stmtBusiness.run(
         name, slug, category,
         faker.company.catchPhrase(),
@@ -80,7 +91,7 @@ db.serialize(() => {
         faker.location.zipCode('0####'),
         faker.phone.number(),
         faker.internet.email(),
-        'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80',
+        uniqueImage,
         '',
         JSON.stringify({ monFri: '09:00 - 20:00', sat: '09:00 - 14:00', sun: 'Cerrado' }),
         JSON.stringify({ instagram: '', facebook: '' }),
