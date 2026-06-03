@@ -11,11 +11,13 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
+@ApiTags('payments')
 @Controller('payments')
 @UseGuards(AuthGuard)
 export class PaymentsController {
