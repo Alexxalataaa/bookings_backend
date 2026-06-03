@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm';
 import * as crypto from 'crypto';
 import { Business } from '../businesses/business.entity';
 import { Appointment } from '../appointments/appointment.entity';
@@ -15,13 +15,22 @@ export class User {
   @Column()
   fullName: string;
 
-  @Column({ unique: true })
+  /**
+   * Nullable to support CRM-only clients (not login accounts).
+   * Uniqueness is enforced at service level for login-capable accounts.
+   */
+  @Column({ nullable: true })
   email: string;
 
-  @Column({ unique: true })
+  /**
+   * Nullable to support CRM-only clients (not login accounts).
+   * Uniqueness is enforced at service level for login-capable accounts.
+   */
+  @Column({ nullable: true })
   username: string;
 
-  @Column()
+  /** Nullable: CRM-only clients do not have a password */
+  @Column({ nullable: true })
   passwordHash: string;
 
   @Column({ default: false })
@@ -29,6 +38,21 @@ export class User {
 
   @Column({ default: 'client' })
   role: string; // 'client' | 'business' | 'superadmin'
+
+  /** Phone number — used by CRM clients added manually by business owners */
+  @Column({ nullable: true })
+  phone: string;
+
+  /**
+   * Name of the business/company associated with this CRM client.
+   * Named customerBusiness to avoid confusion with the Business entity.
+   */
+  @Column({ nullable: true })
+  customerBusiness: string;
+
+  /** Auto-set on creation — used by CRM clients */
+  @CreateDateColumn()
+  createdAt: Date;
 
   @OneToMany(() => Business, (business) => business.owner)
   businesses: Business[];

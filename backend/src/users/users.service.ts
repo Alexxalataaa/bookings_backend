@@ -13,6 +13,7 @@ export class UsersService {
   async findAll() {
     return this.userRepository.find({
       select: ['id', 'fullName', 'email', 'username', 'role', 'isConfirmed'],
+      where: [{ role: 'superadmin' }, { role: 'business' }],
       order: { id: 'DESC' },
     });
   }

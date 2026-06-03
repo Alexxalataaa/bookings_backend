@@ -9,7 +9,7 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { CustomersService } from './customers.service';
+import { CustomersService, CustomerResponse } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -21,17 +21,17 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Get()
-  findAll() {
+  findAll(): Promise<CustomerResponse[]> {
     return this.customersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<CustomerResponse> {
     return this.customersService.findOne(id);
   }
 
   @Post()
-  create(@Body() createCustomerDto: CreateCustomerDto) {
+  create(@Body() createCustomerDto: CreateCustomerDto): Promise<CustomerResponse> {
     return this.customersService.create(createCustomerDto);
   }
 
@@ -39,12 +39,12 @@ export class CustomersController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCustomerDto: UpdateCustomerDto,
-  ) {
+  ): Promise<CustomerResponse> {
     return this.customersService.update(id, updateCustomerDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.customersService.remove(id);
   }
 }
