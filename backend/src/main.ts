@@ -10,23 +10,28 @@ import type { Request, Response, NextFunction } from 'express';
 // ─── Helper: HTTP Basic Auth middleware factory ───────────────────────────────
 function basicAuthMiddleware(user: string, pass: string, realm: string) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers['authorization'];
+    try {
+      const authHeader = req.headers['authorization'];
 
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
-      res.setHeader('WWW-Authenticate', `Basic realm="${realm}"`);
-      res.status(401).send('Acceso restringido. Se requieren credenciales.');
-      return;
-    }
+      if (!authHeader || typeof authHeader !== 'string' || !authHeader.startsWith('Basic ')) {
+        res.setHeader('WWW-Authenticate', `Basic realm="${realm}"`);
+        res.status(401).send('Acceso restringido. Se requieren credenciales.');
+        return;
+      }
 
-    const base64 = authHeader.slice('Basic '.length);
-    const decoded = Buffer.from(base64, 'base64').toString('utf-8');
-    const [reqUser, reqPass] = decoded.split(':');
+      const base64 = authHeader.slice('Basic '.length);
+      const decoded = Buffer.from(base64, 'base64').toString('utf-8');
+      const [reqUser, reqPass] = decoded.split(':');
 
-    if (reqUser === user && reqPass === pass) {
-      next();
-    } else {
-      res.setHeader('WWW-Authenticate', `Basic realm="${realm}"`);
-      res.status(401).send('Credenciales incorrectas.');
+      if (reqUser === user && reqPass === pass) {
+        next();
+      } else {
+        res.setHeader('WWW-Authenticate', `Basic realm="${realm}"`);
+        res.status(401).send('Credenciales incorrectas.');
+      }
+    } catch (err: any) {
+      console.error('Auth middleware error:', err);
+      res.status(500).send(`Auth error: ${err.message}`);
     }
   };
 }
@@ -63,7 +68,7 @@ async function bootstrap() {
   app.use('/api/superadmin', basicAuthMiddleware(
     superadminUser,
     superadminPass,
-    'BookFlow — Superadmin Docs',
+    'BookFlow - Superadmin Docs',
   ));
 
   const superadminConfig = new DocumentBuilder()
@@ -96,7 +101,7 @@ async function bootstrap() {
   app.use('/api/business', basicAuthMiddleware(
     businessUser,
     businessPass,
-    'BookFlow — Business Docs',
+    'BookFlow - Business Docs',
   ));
 
   const businessConfig = new DocumentBuilder()
