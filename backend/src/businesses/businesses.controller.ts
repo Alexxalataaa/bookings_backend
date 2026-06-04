@@ -34,7 +34,8 @@ export class BusinessesController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('business', 'superadmin')
   async create(@Body() body: any, @Req() req: any) {
     return this.businessesService.create(body, req.user);
   }
