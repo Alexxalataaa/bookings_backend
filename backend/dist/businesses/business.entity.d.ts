@@ -1,0 +1,29 @@
+import { User } from '../auth/user.entity';
+import { Service } from '../services/service.entity';
+import { Appointment } from '../appointments/appointment.entity';
+import { Payment } from '../payments/payment.entity';
+export declare class Business {
+    id: number;
+    name: string;
+    slug: string;
+    category: string;
+    description: string;
+    street: string;
+    city: string;
+    zipCode: string;
+    phone: string;
+    email: string;
+    image: string;
+    logo: string;
+    hours: string;
+    socialLinks: string;
+    gallery: string;
+    rating: number;
+    reviewsCount: number;
+    isSuspended: boolean;
+    createdAt: string;
+    owner: User;
+    services: Service[];
+    appointments: Appointment[];
+    payments: Payment[];
+}
