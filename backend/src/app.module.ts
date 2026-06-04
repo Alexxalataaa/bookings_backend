@@ -4,6 +4,13 @@ import { AppointmentsModule } from './appointments/appointments.module';
 import { CustomersModule } from './customers/customers.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AuthModule } from './auth/auth.module';
+import { BusinessesModule } from './businesses/businesses.module';
+import { ServicesModule } from './services/services.module';
+import { LogsModule } from './logs/logs.module';
+import { UsersModule } from './users/users.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -13,10 +20,17 @@ import { NotificationsModule } from './notifications/notifications.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    AuthModule,
+    BusinessesModule,
+    ServicesModule,
     AppointmentsModule,
     CustomersModule,
     PaymentsModule,
     NotificationsModule,
+    LogsModule,
+    UsersModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

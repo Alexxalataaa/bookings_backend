@@ -1,9 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from '../auth/user.entity';
+import { Business } from '../businesses/business.entity';
+import { Service } from '../services/service.entity';
 
 export enum AppointmentStatus {
   PENDING = 'pending',
   CONFIRMED = 'confirmed',
   PAID = 'paid',
+  CANCELLED = 'cancelled',
 }
 
 @Entity()
@@ -23,12 +27,21 @@ export class Appointment {
   })
   status: AppointmentStatus;
 
-  @Column()
-  customerId: number;
+  @Column({ nullable: true })
+  customerId: number; // Keep for backward-compatibility / guest bookings
 
-  @Column()
+  @Column({ nullable: true })
   businessId: number;
 
-  @Column()
+  @Column({ nullable: true })
   serviceName: string;
+
+  @ManyToOne(() => User, (user) => user.appointments, { nullable: true, onDelete: 'SET NULL' })
+  user: User;
+
+  @ManyToOne(() => Business, (business) => business.appointments, { onDelete: 'CASCADE' })
+  business: Business;
+
+  @ManyToOne(() => Service, (service) => service.appointments, { nullable: true, onDelete: 'SET NULL' })
+  service: Service;
 }

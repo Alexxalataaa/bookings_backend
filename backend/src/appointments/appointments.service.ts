@@ -12,35 +12,73 @@ export class AppointmentsService {
     @InjectRepository(Appointment)
     private readonly appointmentsRepository: Repository<Appointment>,
     private readonly notificationsGateway: NotificationsGateway,
-  ) {}
+  ) { }
 
-  findAll() {
-    return this.appointmentsRepository.find({
-      order: { date: 'ASC', time: 'ASC' },
+  async findAll(user: { userId: number; role: string; username: string }, businessId?: number) {
+    const isSuperadmin = user.username === 'admin' || user.role === 'superadmin';
+
+    const query = this.appointmentsRepository.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.user', 'user')
+      .leftJoinAndSelect('appointment.business', 'business')
+      .leftJoinAndSelect('appointment.service', 'service')
+      .orderBy('appointment.date', 'ASC')
+      .addOrderBy('appointment.time', 'ASC');
+
+    if (isSuperadmin) {
+      if (businessId) {
+        query.andWhere('appointment.businessId = :businessId', { businessId });
+      }
+    } else if (user.role === 'business') {
+      // Must filter by businesses owned by this owner
+      query.leftJoin('business.owner', 'owner')
+        .andWhere('owner.id = :ownerId', { ownerId: user.userId });
+
+      if (businessId) {
+        query.andWhere('appointment.businessId = :businessId', { businessId });
+      }
+    } else {
+      // Client
+      query.andWhere('appointment.user.id = :clientId', { clientId: user.userId });
+    }
+
+    return query.getMany();
+  }
+
+  async findOne(id: number) {
+    const appointment = await this.appointmentsRepository.findOne({
+      where: { id },
+      relations: ['user', 'business', 'service'],
     });
+    if (!appointment) {
+      throw new NotFoundException(`No existe la reserva con id ${id}`);
+    }
+    return appointment;
   }
 
-  findOne(id: number) {
-    return this.appointmentsRepository.findOneBy({ id });
-  }
+  async create(createAppointmentDto: CreateAppointmentDto & { userId?: number }) {
+    const appointment = this.appointmentsRepository.create({
+      date: createAppointmentDto.date,
+      time: createAppointmentDto.time,
+      status: createAppointmentDto.status as any,
+      customerId: createAppointmentDto.customerId,
+      businessId: createAppointmentDto.businessId,
+      serviceName: createAppointmentDto.serviceName,
+      user: createAppointmentDto.userId ? { id: createAppointmentDto.userId } as any : null,
+      business: { id: createAppointmentDto.businessId } as any,
+      service: (createAppointmentDto as any).serviceId ? { id: (createAppointmentDto as any).serviceId } as any : null,
+    });
 
-  async create(createAppointmentDto: CreateAppointmentDto) {
-    const appointment = this.appointmentsRepository.create(createAppointmentDto);
     const saved = await this.appointmentsRepository.save(appointment);
     this.notificationsGateway.sendNotification('Nueva reserva creada');
     return saved;
   }
 
   async update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
-    const appointment = await this.appointmentsRepository.findOneBy({ id });
-
-    if (!appointment) {
-      throw new NotFoundException(`No existe la reserva con id ${id}`);
-    }
+    const appointment = await this.findOne(id);
 
     const updatedAppointment = this.appointmentsRepository.merge(
       appointment,
-      updateAppointmentDto,
+      updateAppointmentDto as any,
     );
 
     const saved = await this.appointmentsRepository.save(updatedAppointment);
@@ -49,15 +87,9 @@ export class AppointmentsService {
   }
 
   async remove(id: number) {
-    const appointment = await this.appointmentsRepository.findOneBy({ id });
-
-    if (!appointment) {
-      throw new NotFoundException(`No existe la reserva con id ${id}`);
-    }
-
+    const appointment = await this.findOne(id);
     await this.appointmentsRepository.remove(appointment);
     this.notificationsGateway.sendNotification('Reserva eliminada');
-
     return { message: `Reserva ${id} eliminada correctamente` };
   }
 }

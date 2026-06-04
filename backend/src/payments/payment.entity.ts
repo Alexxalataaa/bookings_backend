@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Business } from '../businesses/business.entity';
 
 export enum PaymentStatus {
   PENDING = 'pending',
@@ -33,4 +34,7 @@ export class Payment {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @ManyToOne(() => Business, (business) => business.payments, { nullable: true, onDelete: 'SET NULL' })
+  business: Business;
 }
