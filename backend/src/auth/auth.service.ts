@@ -48,31 +48,31 @@ export class AuthService implements OnModuleInit {
     console.log('Successfully seeded/updated default superadmin user "admin" with password "admin"');
 
     // 2. Seed Client User
-    let client = await this.userRepository.findOne({ where: { username: 'client1' } });
+    let client = await this.userRepository.findOne({ where: { username: 'cliente' } });
     if (!client) {
       client = new User();
-      client.username = 'client1';
-      client.fullName = 'Cliente Premium';
-      client.email = 'client1@bookflow.com';
+      client.username = 'cliente';
+      client.fullName = 'Cliente de Prueba';
+      client.email = 'cliente@bookflow.com';
       client.role = 'client';
-      client.passwordHash = hashPassword('client123!');
+      client.passwordHash = hashPassword('1234');
       client.isConfirmed = true;
       await this.userRepository.save(client);
-      console.log('Successfully seeded client user "client1" with password "client123!"');
+      console.log('Successfully seeded client user "cliente" with password "1234"');
     }
 
     // 3. Seed Business Owner User
-    let owner = await this.userRepository.findOne({ where: { username: 'owner1' } });
+    let owner = await this.userRepository.findOne({ where: { username: 'empresa' } });
     if (!owner) {
       owner = new User();
-      owner.username = 'owner1';
-      owner.fullName = 'Propietario de Negocios';
-      owner.email = 'owner1@bookflow.com';
+      owner.username = 'empresa';
+      owner.fullName = 'Empresa de Prueba';
+      owner.email = 'empresa@bookflow.com';
       owner.role = 'business';
-      owner.passwordHash = hashPassword('owner123!');
+      owner.passwordHash = hashPassword('1234');
       owner.isConfirmed = true;
       await this.userRepository.save(owner);
-      console.log('Successfully seeded business owner user "owner1" with password "owner123!"');
+      console.log('Successfully seeded business owner user "empresa" with password "1234"');
     }
 
     // 4. Seed Businesses and Services if none exist
