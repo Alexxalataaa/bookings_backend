@@ -30,4 +30,9 @@ export class CreateAppointmentDto {
   @ApiProperty({ example: 'Corte de pelo' })
   @IsString()
   serviceName: string;
+
+  @ApiProperty({ example: 1, required: false })
+  @IsOptional()
+  @IsInt()
+  serviceId?: number;
 }
