@@ -28,20 +28,71 @@ function mapUserToCustomer(user: User): CustomerResponse {
   };
 }
 
+import { Brackets, In } from 'typeorm';
+import { Business } from '../businesses/business.entity';
+import { Appointment } from '../appointments/appointment.entity';
+
 @Injectable()
 export class CustomersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Business)
+    private readonly businessRepository: Repository<Business>,
+    @InjectRepository(Appointment)
+    private readonly appointmentRepository: Repository<Appointment>,
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  async findAll(): Promise<CustomerResponse[]> {
-    const users = await this.userRepository.find({
-      where: { role: 'client' },
-      order: { createdAt: 'DESC' },
+  async findAll(userReq?: { userId: number; role: string; username: string }): Promise<CustomerResponse[]> {
+    if (userReq && userReq.role === 'business') {
+      const businesses = await this.businessRepository.find({
+        where: { owner: { id: userReq.userId } }
+      });
+      if (businesses.length === 0) {
+        return [];
+      }
+      const businessIds = businesses.map(b => b.id);
+      const businessNames = businesses.map(b => b.name);
+
+      const users = await this.userRepository.createQueryBuilder('user')
+        .leftJoin('user.appointments', 'appointment')
+        .where('user.role = :role', { role: 'client' })
+        .andWhere(
+          new Brackets(qb => {
+            qb.where('appointment.businessId IN (:...businessIds)', { businessIds })
+              .orWhere('user.customerBusiness IN (:...businessNames)', { businessNames });
+          })
+        )
+        .orderBy('user.createdAt', 'DESC')
+        .getMany();
+
+      // De-duplicate users manually to be safe
+      const seen = new Set<number>();
+      const uniqueUsers = users.filter(u => {
+        if (seen.has(u.id)) return false;
+        seen.add(u.id);
+        return true;
+      });
+
+      return uniqueUsers.map(mapUserToCustomer);
+    }
+
+    // Superadmin or fallback - return all clients that have at least one appointment
+    const users = await this.userRepository.createQueryBuilder('user')
+      .innerJoin('user.appointments', 'appointment')
+      .where('user.role = :role', { role: 'client' })
+      .orderBy('user.createdAt', 'DESC')
+      .getMany();
+
+    const seen = new Set<number>();
+    const uniqueUsers = users.filter(u => {
+      if (seen.has(u.id)) return false;
+      seen.add(u.id);
+      return true;
     });
-    return users.map(mapUserToCustomer);
+
+    return uniqueUsers.map(mapUserToCustomer);
   }
 
   async findOne(id: number): Promise<CustomerResponse> {
@@ -120,12 +171,40 @@ export class CustomersService {
     return mapUserToCustomer(saved);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userReq?: { userId: number; role: string }): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id, role: 'client' } });
     if (!user) {
       throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
     }
-    await this.userRepository.remove(user);
+
+    if (userReq && userReq.role === 'business') {
+      // Find businesses owned by this owner
+      const businesses = await this.businessRepository.find({
+        where: { owner: { id: userReq.userId } }
+      });
+      if (businesses.length > 0) {
+        const businessIds = businesses.map(b => b.id);
+        // Delete appointments for this customer in this owner's businesses
+        await this.appointmentRepository.delete({
+          customerId: id,
+          businessId: In(businessIds),
+        });
+      }
+    } else {
+      // Superadmin - delete all appointments for this customer
+      await this.appointmentRepository.delete({ customerId: id });
+    }
+
+    // Check if the customer has any appointments remaining in the entire system
+    const remainingCount = await this.appointmentRepository.count({
+      where: { customerId: id }
+    });
+
+    // If no appointments remain, or if it is deleted by superadmin, remove user
+    if (remainingCount === 0 || !userReq || userReq.role === 'superadmin') {
+      await this.userRepository.remove(user);
+    }
+
     this.notificationsGateway.sendNotification('Cliente eliminado');
   }
 }
