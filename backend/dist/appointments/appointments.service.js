@@ -18,11 +18,14 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const appointment_entity_1 = require("./appointment.entity");
 const notifications_gateway_1 = require("../notifications/notifications.gateway");
+const business_entity_1 = require("../businesses/business.entity");
 let AppointmentsService = class AppointmentsService {
     appointmentsRepository;
+    businessRepository;
     notificationsGateway;
-    constructor(appointmentsRepository, notificationsGateway) {
+    constructor(appointmentsRepository, businessRepository, notificationsGateway) {
         this.appointmentsRepository = appointmentsRepository;
+        this.businessRepository = businessRepository;
         this.notificationsGateway = notificationsGateway;
     }
     async findAll(user, businessId) {
@@ -48,7 +51,13 @@ let AppointmentsService = class AppointmentsService {
         else {
             query.andWhere('appointment.user.id = :clientId', { clientId: user.userId });
         }
-        return query.getMany();
+        const appointments = await query.getMany();
+        return appointments.map(app => {
+            if (app.status && (app.status.toString().toLowerCase() === 'pagada' || app.status.toString().toLowerCase() === 'paid')) {
+                app.status = appointment_entity_1.AppointmentStatus.PAID;
+            }
+            return app;
+        });
     }
     async findOne(id) {
         const appointment = await this.appointmentsRepository.findOne({
@@ -58,17 +67,34 @@ let AppointmentsService = class AppointmentsService {
         if (!appointment) {
             throw new common_1.NotFoundException(`No existe la reserva con id ${id}`);
         }
+        if (appointment.status && (appointment.status.toString().toLowerCase() === 'pagada' || appointment.status.toString().toLowerCase() === 'paid')) {
+            appointment.status = appointment_entity_1.AppointmentStatus.PAID;
+        }
         return appointment;
     }
     async create(createAppointmentDto) {
+        const business = await this.businessRepository.findOne({
+            where: { id: createAppointmentDto.businessId },
+        });
+        if (!business) {
+            throw new common_1.NotFoundException('El negocio solicitado no existe.');
+        }
+        if (business.isSuspended) {
+            throw new common_1.BadRequestException('No se pueden realizar reservas en un negocio suspendido.');
+        }
+        const finalCustomerId = createAppointmentDto.userId || createAppointmentDto.customerId;
+        let finalStatus = createAppointmentDto.status;
+        if (finalStatus && (finalStatus.toString().toLowerCase() === 'pagada' || finalStatus.toString().toLowerCase() === 'paid')) {
+            finalStatus = appointment_entity_1.AppointmentStatus.PAID;
+        }
         const appointment = this.appointmentsRepository.create({
             date: createAppointmentDto.date,
             time: createAppointmentDto.time,
-            status: createAppointmentDto.status,
-            customerId: createAppointmentDto.customerId,
+            status: finalStatus,
+            customerId: finalCustomerId,
             businessId: createAppointmentDto.businessId,
             serviceName: createAppointmentDto.serviceName,
-            user: createAppointmentDto.userId ? { id: createAppointmentDto.userId } : null,
+            user: finalCustomerId ? { id: finalCustomerId } : null,
             business: { id: createAppointmentDto.businessId },
             service: createAppointmentDto.serviceId ? { id: createAppointmentDto.serviceId } : null,
         });
@@ -78,8 +104,14 @@ let AppointmentsService = class AppointmentsService {
     }
     async update(id, updateAppointmentDto) {
         const appointment = await this.findOne(id);
+        if (updateAppointmentDto.status && (updateAppointmentDto.status.toString().toLowerCase() === 'pagada' || updateAppointmentDto.status.toString().toLowerCase() === 'paid')) {
+            updateAppointmentDto.status = appointment_entity_1.AppointmentStatus.PAID;
+        }
         const updatedAppointment = this.appointmentsRepository.merge(appointment, updateAppointmentDto);
         const saved = await this.appointmentsRepository.save(updatedAppointment);
+        if (saved.status && (saved.status.toString().toLowerCase() === 'pagada' || saved.status.toString().toLowerCase() === 'paid')) {
+            saved.status = appointment_entity_1.AppointmentStatus.PAID;
+        }
         this.notificationsGateway.sendNotification('Reserva actualizada');
         return saved;
     }
@@ -94,7 +126,9 @@ exports.AppointmentsService = AppointmentsService;
 exports.AppointmentsService = AppointmentsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(appointment_entity_1.Appointment)),
+    __param(1, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         notifications_gateway_1.NotificationsGateway])
 ], AppointmentsService);
 //# sourceMappingURL=appointments.service.js.map

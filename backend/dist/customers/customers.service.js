@@ -28,19 +28,61 @@ function mapUserToCustomer(user) {
         createdAt: user.createdAt,
     };
 }
+const typeorm_3 = require("typeorm");
+const business_entity_1 = require("../businesses/business.entity");
+const appointment_entity_1 = require("../appointments/appointment.entity");
 let CustomersService = class CustomersService {
     userRepository;
+    businessRepository;
+    appointmentRepository;
     notificationsGateway;
-    constructor(userRepository, notificationsGateway) {
+    constructor(userRepository, businessRepository, appointmentRepository, notificationsGateway) {
         this.userRepository = userRepository;
+        this.businessRepository = businessRepository;
+        this.appointmentRepository = appointmentRepository;
         this.notificationsGateway = notificationsGateway;
     }
-    async findAll() {
-        const users = await this.userRepository.find({
-            where: { role: 'client' },
-            order: { createdAt: 'DESC' },
+    async findAll(userReq) {
+        if (userReq && userReq.role === 'business') {
+            const businesses = await this.businessRepository.find({
+                where: { owner: { id: userReq.userId } }
+            });
+            if (businesses.length === 0) {
+                return [];
+            }
+            const businessIds = businesses.map(b => b.id);
+            const businessNames = businesses.map(b => b.name);
+            const users = await this.userRepository.createQueryBuilder('user')
+                .leftJoin('user.appointments', 'appointment')
+                .where('user.role = :role', { role: 'client' })
+                .andWhere(new typeorm_3.Brackets(qb => {
+                qb.where('appointment.businessId IN (:...businessIds)', { businessIds })
+                    .orWhere('user.customerBusiness IN (:...businessNames)', { businessNames });
+            }))
+                .orderBy('user.createdAt', 'DESC')
+                .getMany();
+            const seen = new Set();
+            const uniqueUsers = users.filter(u => {
+                if (seen.has(u.id))
+                    return false;
+                seen.add(u.id);
+                return true;
+            });
+            return uniqueUsers.map(mapUserToCustomer);
+        }
+        const users = await this.userRepository.createQueryBuilder('user')
+            .innerJoin('user.appointments', 'appointment')
+            .where('user.role = :role', { role: 'client' })
+            .orderBy('user.createdAt', 'DESC')
+            .getMany();
+        const seen = new Set();
+        const uniqueUsers = users.filter(u => {
+            if (seen.has(u.id))
+                return false;
+            seen.add(u.id);
+            return true;
         });
-        return users.map(mapUserToCustomer);
+        return uniqueUsers.map(mapUserToCustomer);
     }
     async findOne(id) {
         const user = await this.userRepository.findOne({
@@ -105,12 +147,32 @@ let CustomersService = class CustomersService {
         this.notificationsGateway.sendNotification('Cliente actualizado');
         return mapUserToCustomer(saved);
     }
-    async remove(id) {
+    async remove(id, userReq) {
         const user = await this.userRepository.findOne({ where: { id, role: 'client' } });
         if (!user) {
             throw new common_1.NotFoundException(`Cliente con ID ${id} no encontrado`);
         }
-        await this.userRepository.remove(user);
+        if (userReq && userReq.role === 'business') {
+            const businesses = await this.businessRepository.find({
+                where: { owner: { id: userReq.userId } }
+            });
+            if (businesses.length > 0) {
+                const businessIds = businesses.map(b => b.id);
+                await this.appointmentRepository.delete({
+                    customerId: id,
+                    businessId: (0, typeorm_3.In)(businessIds),
+                });
+            }
+        }
+        else {
+            await this.appointmentRepository.delete({ customerId: id });
+        }
+        const remainingCount = await this.appointmentRepository.count({
+            where: { customerId: id }
+        });
+        if (remainingCount === 0 || !userReq || userReq.role === 'superadmin') {
+            await this.userRepository.remove(user);
+        }
         this.notificationsGateway.sendNotification('Cliente eliminado');
     }
 };
@@ -118,7 +180,11 @@ exports.CustomersService = CustomersService;
 exports.CustomersService = CustomersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(1, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
+    __param(2, (0, typeorm_1.InjectRepository)(appointment_entity_1.Appointment)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         notifications_gateway_1.NotificationsGateway])
 ], CustomersService);
 //# sourceMappingURL=customers.service.js.map

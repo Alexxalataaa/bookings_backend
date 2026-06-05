@@ -11,13 +11,24 @@ export interface CustomerResponse {
     business: string | null;
     createdAt: Date;
 }
+import { Business } from '../businesses/business.entity';
+import { Appointment } from '../appointments/appointment.entity';
 export declare class CustomersService {
     private readonly userRepository;
+    private readonly businessRepository;
+    private readonly appointmentRepository;
     private readonly notificationsGateway;
-    constructor(userRepository: Repository<User>, notificationsGateway: NotificationsGateway);
-    findAll(): Promise<CustomerResponse[]>;
+    constructor(userRepository: Repository<User>, businessRepository: Repository<Business>, appointmentRepository: Repository<Appointment>, notificationsGateway: NotificationsGateway);
+    findAll(userReq?: {
+        userId: number;
+        role: string;
+        username: string;
+    }): Promise<CustomerResponse[]>;
     findOne(id: number): Promise<CustomerResponse>;
     create(createCustomerDto: CreateCustomerDto): Promise<CustomerResponse>;
     update(id: number, updateCustomerDto: UpdateCustomerDto): Promise<CustomerResponse>;
-    remove(id: number): Promise<void>;
+    remove(id: number, userReq?: {
+        userId: number;
+        role: string;
+    }): Promise<void>;
 }

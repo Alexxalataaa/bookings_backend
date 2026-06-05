@@ -39,6 +39,7 @@ const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
+const path = __importStar(require("path"));
 function basicAuthMiddleware(user, pass, realm) {
     return (req, res, next) => {
         try {
@@ -67,6 +68,9 @@ function basicAuthMiddleware(user, pass, realm) {
 }
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.use('/light_krono.png', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '..', 'light_krono.png'));
+    });
     app.enableCors({
         origin: ['http://localhost:3001', 'http://localhost:3000'],
         credentials: true,
@@ -82,7 +86,7 @@ async function bootstrap() {
     const superadminPass = process.env.SWAGGER_SUPERADMIN_PASS || 'super123';
     app.use('/api/superadmin', basicAuthMiddleware(superadminUser, superadminPass, 'BookFlow - Superadmin Docs'));
     const superadminConfig = new swagger_1.DocumentBuilder()
-        .setTitle('BookFlow API — Superadmin')
+        .setTitle('Krono API — Superadmin')
         .setDescription('🔴 Panel completo de la API. Acceso total a todos los endpoints.\n\n' +
         '**Credenciales por defecto (dev):** `superadmin` / `super123`')
         .setVersion('1.0')
@@ -93,12 +97,14 @@ async function bootstrap() {
     });
     swagger_1.SwaggerModule.setup('api/superadmin', app, superadminDocument, {
         swaggerOptions: { persistAuthorization: true },
+        customfavIcon: '/light_krono.png',
+        customSiteTitle: 'Krono API — Superadmin',
     });
     const businessUser = process.env.SWAGGER_BUSINESS_USER || 'business';
     const businessPass = process.env.SWAGGER_BUSINESS_PASS || 'biz123';
     app.use('/api/business', basicAuthMiddleware(businessUser, businessPass, 'BookFlow - Business Docs'));
     const businessConfig = new swagger_1.DocumentBuilder()
-        .setTitle('BookFlow API — Negocio')
+        .setTitle('Krono API — Negocio')
         .setDescription('🟡 Panel de la API para administradores de negocio.\n\n' +
         'Incluye: auth, negocios, servicios, reservas, clientes y pagos.\n\n' +
         '**No incluye:** gestión de cuentas de usuario ni logs del sistema.\n\n' +
@@ -119,15 +125,19 @@ async function bootstrap() {
     const businessDocument = { ...fullDocument, paths: businessPaths };
     swagger_1.SwaggerModule.setup('api/business', app, businessDocument, {
         swaggerOptions: { persistAuthorization: true },
+        customfavIcon: '/light_krono.png',
+        customSiteTitle: 'Krono API — Negocio',
     });
-    app.use('/api', (req, res) => {
-        res.status(200).send(`
+    app.use('/api', (req, res, next) => {
+        if (req.path === '/' || req.path === '') {
+            res.status(200).send(`
       <!DOCTYPE html>
       <html lang="es">
       <head>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>BookFlow API Docs</title>
+        <title>Krono API Docs</title>
+        <link rel="icon" type="image/png" href="/light_krono.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -174,13 +184,16 @@ async function bootstrap() {
             display: flex; justify-content: center; margin-bottom: 24px;
           }
           .logo-icon {
-            width: 56px; height: 56px;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            border-radius: 16px;
+            width: auto; height: auto;
+            background: transparent;
+            box-shadow: none;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
           }
-          .logo-icon svg { width: 32px; height: 32px; color: white; }
+          .logo-icon img {
+            width: 56px; height: 56px;
+            border-radius: 12px;
+            object-fit: cover;
+          }
 
           h1 { 
             font-size: 28px; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em;
@@ -235,13 +248,11 @@ async function bootstrap() {
         <div class="container">
           <div class="logo-container">
             <div class="logo-icon">
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+              <img src="/light_krono.png" alt="Krono Logo" />
             </div>
           </div>
           
-          <h1>BookFlow API</h1>
+          <h1>Krono API</h1>
           <p class="subtitle">Selecciona el entorno de documentación correspondiente a tus credenciales de acceso.</p>
           
           <div class="btn-group">
@@ -267,6 +278,10 @@ async function bootstrap() {
       </body>
       </html>
     `);
+        }
+        else {
+            next();
+        }
     });
     await app.listen(3000, () => {
         console.log('✅ NestJS Backend running on http://localhost:3000');

@@ -12,6 +12,8 @@ const typeorm_1 = require("@nestjs/typeorm");
 const customers_service_1 = require("./customers.service");
 const customers_controller_1 = require("./customers.controller");
 const user_entity_1 = require("../auth/user.entity");
+const business_entity_1 = require("../businesses/business.entity");
+const appointment_entity_1 = require("../appointments/appointment.entity");
 const auth_module_1 = require("../auth/auth.module");
 const notifications_module_1 = require("../notifications/notifications.module");
 let CustomersModule = class CustomersModule {
@@ -19,7 +21,11 @@ let CustomersModule = class CustomersModule {
 exports.CustomersModule = CustomersModule;
 exports.CustomersModule = CustomersModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([user_entity_1.User]), auth_module_1.AuthModule, notifications_module_1.NotificationsModule],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, business_entity_1.Business, appointment_entity_1.Appointment]),
+            auth_module_1.AuthModule,
+            notifications_module_1.NotificationsModule,
+        ],
         controllers: [customers_controller_1.CustomersController],
         providers: [customers_service_1.CustomersService],
         exports: [customers_service_1.CustomersService],

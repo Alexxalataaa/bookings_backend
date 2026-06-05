@@ -23,8 +23,8 @@ let CustomersController = class CustomersController {
     constructor(customersService) {
         this.customersService = customersService;
     }
-    findAll() {
-        return this.customersService.findAll();
+    findAll(req) {
+        return this.customersService.findAll(req.user);
     }
     findOne(id) {
         return this.customersService.findOne(id);
@@ -35,15 +35,16 @@ let CustomersController = class CustomersController {
     update(id, updateCustomerDto) {
         return this.customersService.update(id, updateCustomerDto);
     }
-    remove(id) {
-        return this.customersService.remove(id);
+    remove(id, req) {
+        return this.customersService.remove(id, req.user);
     }
 };
 exports.CustomersController = CustomersController;
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "findAll", null);
 __decorate([
@@ -71,8 +72,9 @@ __decorate([
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], CustomersController.prototype, "remove", null);
 exports.CustomersController = CustomersController = __decorate([

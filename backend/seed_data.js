@@ -105,35 +105,60 @@ db.serialize(() => {
       'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80',
       'https://images.unsplash.com/photo-1584515933487-779824d29309?w=800&q=80',
       'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&q=80',
-      'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&q=80'
+      'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&q=80',
+      'https://images.unsplash.com/photo-1551076805-e1869033e561?w=800&q=80',
+      'https://images.unsplash.com/photo-1582750433449-648ed127d0fc?w=800&q=80',
+      'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80',
+      'https://images.unsplash.com/photo-1638202993928-7267aad84c31?w=800&q=80',
+      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80'
     ],
     'Belleza': [
       'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80',
       'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=800&q=80',
       'https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=800&q=80',
       'https://images.unsplash.com/photo-1595476108010-b4d1f10d5e43?w=800&q=80',
-      'https://images.unsplash.com/photo-1516975080661-46b0a8806283?w=800&q=80'
+      'https://images.unsplash.com/photo-1516975080661-46b0a8806283?w=800&q=80',
+      'https://images.unsplash.com/photo-1521590832167-7bfc17484d20?w=800&q=80',
+      'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80',
+      'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=800&q=80',
+      'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=800&q=80',
+      'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=800&q=80'
     ],
     'Deporte': [
       'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
       'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80',
       'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&q=80',
       'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80',
-      'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80'
+      'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&q=80',
+      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80',
+      'https://images.unsplash.com/photo-1554244933-d876deb6b2ff?w=800&q=80',
+      'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=800&q=80',
+      'https://images.unsplash.com/photo-1526502396160-c3cf27eb845d?w=800&q=80',
+      'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&q=80'
     ],
     'Nutrición': [
       'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80',
       'https://images.unsplash.com/photo-1498837167922-41c543bd8bf2?w=800&q=80',
       'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80',
       'https://images.unsplash.com/photo-1478144592103-25e218a04891?w=800&q=80',
-      'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80'
+      'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80',
+      'https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=800&q=80',
+      'https://images.unsplash.com/photo-1490818387583-1b5ba4596d3f?w=800&q=80',
+      'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&q=80',
+      'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&q=80',
+      'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800&q=80'
     ],
     'Psicología': [
       'https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=800&q=80',
       'https://images.unsplash.com/photo-1520694478166-daaaaec95b69?w=800&q=80',
       'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80',
       'https://images.unsplash.com/photo-1516534775068-ba3e7458af70?w=800&q=80',
-      'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80'
+      'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+      'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
+      'https://images.unsplash.com/photo-1493836512294-502baa1986e2?w=800&q=80',
+      'https://images.unsplash.com/photo-1516302752946-f93f9887cece?w=800&q=80',
+      'https://images.unsplash.com/photo-1506869640319-fea1a2753689?w=800&q=80',
+      'https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=80'
     ]
   };
 
@@ -146,7 +171,7 @@ db.serialize(() => {
       const name = `${category} ${faker.company.buzzNoun()} ${faker.number.int({ min: 1, max: 99 })}`;
       businessNames[bId] = name;
       const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      const uniqueImage = faker.helpers.arrayElement(fixedImagesByCategory[category]);
+      const uniqueImage = fixedImagesByCategory[category][businessCount % 10];
 
       const assignedOwnerId = ownerIds[ownerIndex % ownerIds.length];
 
@@ -222,9 +247,20 @@ db.serialize(() => {
 
   const appointmentsList = [];
 
-  for (let i = 1; i <= 600; i++) {
+  for (let bId of businessIds) {
+    for (let j = 0; j < 5; j++) {
+      createAppointment(bId);
+    }
+  }
+
+  for (let i = 0; i < 350; i++) {
     const businessId = faker.helpers.arrayElement(businessIds);
+    createAppointment(businessId);
+  }
+
+  function createAppointment(businessId) {
     const services = servicesByBusiness[businessId];
+    if (!services || services.length === 0) return;
     const service = faker.helpers.arrayElement(services);
     const clientId = faker.helpers.arrayElement(clientIds); // ID de la tabla user con rol client
 
