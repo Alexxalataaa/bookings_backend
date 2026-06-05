@@ -8,6 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CustomersService, CustomerResponse } from './customers.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -21,8 +22,8 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Get()
-  findAll(): Promise<CustomerResponse[]> {
-    return this.customersService.findAll();
+  findAll(@Req() req: any): Promise<CustomerResponse[]> {
+    return this.customersService.findAll(req.user);
   }
 
   @Get(':id')
@@ -44,7 +45,7 @@ export class CustomersController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.customersService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any): Promise<void> {
+    return this.customersService.remove(id, req.user);
   }
 }

@@ -29,32 +29,37 @@ const HASH_OWNER1   = '2307aa011bc2e3a938a845d2c0972baf143d6c419f60c2eb4f543f0da
 const HASH_GENERIC  = 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'; // password123
 
 db.serialize(() => {
-  console.log('Seeding data...');
+  console.log('Re-seeding database with realistic and consistent data...');
 
   // Limpiar tablas
   db.run('DELETE FROM appointment');
   db.run('DELETE FROM payment');
   db.run('DELETE FROM service');
-  db.run('DELETE FROM customer');
   db.run('DELETE FROM business');
   db.run('DELETE FROM user');
-  db.run("DELETE FROM sqlite_sequence WHERE name IN ('appointment','payment','service','customer','business','user')");
+  db.run("DELETE FROM sqlite_sequence WHERE name IN ('appointment','payment','service','business','user')");
 
-  // 1. USUARIOS
+  // 1. USUARIOS (Superadmin, Client Demo, Owners, Clients)
   const stmtUser = db.prepare(`
-    INSERT INTO user (fullName, email, username, passwordHash, isConfirmed, role)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO user (id, fullName, email, username, passwordHash, isConfirmed, role)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
-  // Admin fijo
-  stmtUser.run('Admin Principal', 'admin@bookflow.com', 'admin', HASH_ADMIN, 1, 'superadmin');
+  let currentUserId = 1;
 
-  // Usuario demo cliente
-  stmtUser.run('Cliente Demo', 'client1@bookflow.com', 'client1', HASH_CLIENT, 1, 'client');
+  // Admin fijo (ID 1)
+  stmtUser.run(currentUserId++, 'Admin Principal', 'admin@bookflow.com', 'admin', HASH_ADMIN, 1, 'superadmin');
 
-  // 30 owners (owner1 con hash especial, el resto genérico)
+  // Usuario demo cliente (ID 2)
+  stmtUser.run(currentUserId++, 'Cliente Demo', 'client1@bookflow.com', 'client1', HASH_CLIENT, 1, 'client');
+
+  // 30 owners (IDs 3 al 32)
+  const ownerIds = [];
   for (let i = 1; i <= 30; i++) {
+    const oId = currentUserId++;
+    ownerIds.push(oId);
     stmtUser.run(
+      oId,
       faker.person.fullName(),
       `owner${i}@bookings.com`,
       `owner${i}`,
@@ -63,27 +68,51 @@ db.serialize(() => {
       'business'
     );
   }
+
+  // 200 clientes CRM (IDs 33 al 232)
+  const clientIds = [2]; // Incluir el cliente demo (ID 2)
+  for (let i = 1; i <= 200; i++) {
+    const cId = currentUserId++;
+    clientIds.push(cId);
+    stmtUser.run(
+      cId,
+      faker.person.fullName(),
+      faker.internet.email(),
+      `client_crm_${i}`,
+      null, // Sin login credentials
+      1,
+      'client'
+    );
+  }
   stmtUser.finalize();
 
-  // 2. NEGOCIOS (50) — owners con entre 1 y 4 negocios
+  // 2. NEGOCIOS (50) - asignados a los owners (IDs 3 al 32)
   const stmtBusiness = db.prepare(`
-    INSERT INTO business (name, slug, category, description, street, city, zipCode, phone, email, image, logo, hours, socialLinks, gallery, rating, reviewsCount, isSuspended, createdAt, ownerId)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO business (id, name, slug, category, description, street, city, zipCode, phone, email, image, logo, hours, socialLinks, gallery, rating, reviewsCount, isSuspended, createdAt, ownerId)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   let businessCount = 0;
-  let ownerId = 3; // 1=admin, 2=client1, 3=owner1...
+  let ownerIndex = 0;
+  const businessIds = [];
+  const businessNames = {}; // maps businessId to businessName
 
-  while (businessCount < 50 && ownerId <= 32) {
-    const numNegocios = faker.number.int({ min: 1, max: 4 });
+  while (businessCount < 50) {
+    const numNegocios = faker.number.int({ min: 1, max: 3 });
     for (let j = 0; j < numNegocios && businessCount < 50; j++) {
+      const bId = businessCount + 1;
+      businessIds.push(bId);
       const category = faker.helpers.arrayElement(categories);
       const name = `${category} ${faker.company.buzzNoun()} ${faker.number.int({ min: 1, max: 99 })}`;
+      businessNames[bId] = name;
       const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       const keyword = categoryMapping[category] || 'business';
-      const uniqueImage = `https://loremflickr.com/800/600/${keyword}?random=${businessCount}`;
+      const uniqueImage = `https://loremflickr.com/800/600/${keyword}?random=${bId}`;
+
+      const assignedOwnerId = ownerIds[ownerIndex % ownerIds.length];
 
       stmtBusiness.run(
+        bId,
         name, slug, category,
         faker.company.catchPhrase(),
         faker.location.streetAddress(),
@@ -96,112 +125,144 @@ db.serialize(() => {
         JSON.stringify({ monFri: '09:00 - 20:00', sat: '09:00 - 14:00', sun: 'Cerrado' }),
         JSON.stringify({ instagram: '', facebook: '' }),
         JSON.stringify([]),
-        parseFloat(faker.number.float({ min: 3, max: 5, fractionDigits: 1 })),
-        faker.number.int({ min: 5, max: 300 }),
+        parseFloat(faker.number.float({ min: 3.8, max: 5.0, fractionDigits: 1 })),
+        faker.number.int({ min: 15, max: 150 }),
         0,
-        faker.date.past({ years: 2 }).toISOString(),
-        ownerId
+        faker.date.past({ years: 1 }).toISOString(),
+        assignedOwnerId
       );
       businessCount++;
     }
-    ownerId++;
+    ownerIndex++;
   }
   stmtBusiness.finalize();
 
-  // 3. SERVICIOS
+  // 3. SERVICIOS (Asociados a los 50 negocios)
   const stmtService = db.prepare(`
-    INSERT INTO service (name, description, price, duration, businessId)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO service (id, name, description, price, duration, businessId)
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
 
-  for (let businessId = 1; businessId <= 50; businessId++) {
+  let serviceId = 1;
+  const servicesByBusiness = {}; // maps businessId to array of services {id, name, price}
+
+  for (let bId of businessIds) {
+    // Determinar la categoría del negocio (simulada por faker o leída si fuera necesario, usaremos una aleatoria)
     const category = faker.helpers.arrayElement(categories);
-    const services = servicesByCategory[category];
-    services.forEach(serviceName => {
+    const serviceNames = servicesByCategory[category];
+    
+    servicesByBusiness[bId] = [];
+
+    serviceNames.forEach(serviceName => {
+      const sId = serviceId++;
+      const price = faker.number.int({ min: 15, max: 80 });
+      
+      servicesByBusiness[bId].push({
+        id: sId,
+        name: serviceName,
+        price: price
+      });
+
       stmtService.run(
+        sId,
         serviceName,
         faker.lorem.sentence(),
-        parseFloat(faker.finance.amount({ min: 20, max: 150, dec: 2 })),
-        faker.helpers.arrayElement([30, 45, 60, 90]),
-        businessId
+        price,
+        faker.helpers.arrayElement([30, 45, 60]),
+        bId
       );
     });
   }
   stmtService.finalize();
 
-  // 4. CLIENTES
-  const stmtCustomer = db.prepare(`
-    INSERT INTO customer (name, email, phone, business, createdAt)
-    VALUES (?, ?, ?, ?, ?)
-  `);
-
-  for (let i = 0; i < 200; i++) {
-    stmtCustomer.run(
-      faker.person.fullName(),
-      faker.internet.email(),
-      faker.phone.number(),
-      faker.number.int({ min: 1, max: 50 }).toString(),
-      faker.date.past({ years: 1 }).toISOString()
-    );
-  }
-  stmtCustomer.finalize();
-
-  // 5. CITAS
+  // 4. CITAS (Reservas de clientes reales a negocios reales)
   const stmtApp = db.prepare(`
     INSERT INTO appointment (date, time, status, customerId, businessId, serviceName, userId, serviceId)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  for (let i = 0; i < 500; i++) {
-    const businessId = faker.number.int({ min: 1, max: 50 });
-    const category = faker.helpers.arrayElement(categories);
-    const services = servicesByCategory[category];
-    stmtApp.run(
-      faker.date.recent({ days: 60 }).toISOString().split('T')[0],
-      `${faker.number.int({ min: 8, max: 19 })}:00`,
-      faker.helpers.arrayElement(['pending', 'confirmed', 'paid']),
-      faker.number.int({ min: 1, max: 200 }),
+  const appointmentsList = [];
+
+  for (let i = 1; i <= 600; i++) {
+    const businessId = faker.helpers.arrayElement(businessIds);
+    const services = servicesByBusiness[businessId];
+    const service = faker.helpers.arrayElement(services);
+    const clientId = faker.helpers.arrayElement(clientIds); // ID de la tabla user con rol client
+
+    const date = faker.date.between({
+      from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Hace 30 días
+      to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)   // Próximos 30 días
+    }).toISOString().split('T')[0];
+
+    const status = faker.helpers.arrayElement(['pending', 'confirmed', 'paid', 'cancelled']);
+
+    appointmentsList.push({
+      date,
+      clientId,
       businessId,
-      faker.helpers.arrayElement(services),
-      faker.number.int({ min: 3, max: 32 }),
-      faker.number.int({ min: 1, max: 3 })
+      amount: service.price,
+      status
+    });
+
+    stmtApp.run(
+      date,
+      `${faker.number.int({ min: 8, max: 19 })}:00`,
+      status,
+      clientId,     // customerId es el ID del User cliente
+      businessId,
+      service.name,
+      clientId,     // userId también apunta al mismo ID del User cliente
+      service.id
     );
   }
   stmtApp.finalize();
 
-  // 6. PAGOS
-  const stmtPay = db.prepare(`
-    INSERT INTO payment (clientName, businessName, amount, method, date, status, createdAt, businessId)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
+  // Obtener nombres de usuarios clientes para Payments
+  db.all('SELECT id, fullName FROM user WHERE role = \'client\'', (err, rows) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    const clientsMap = {};
+    rows.forEach(r => {
+      clientsMap[r.id] = r.fullName;
+    });
 
-  for (let i = 0; i < 400; i++) {
-    const date = faker.date.recent({ days: 60 }).toISOString().split('T')[0];
-    const businessId = faker.number.int({ min: 1, max: 50 });
-    stmtPay.run(
-      faker.person.fullName(),
-      `Negocio ${businessId}`,
-      parseFloat(faker.finance.amount({ min: 20, max: 150, dec: 2 })),
-      faker.helpers.arrayElement(['card', 'cash', 'transfer']),
-      date,
-      faker.helpers.arrayElement(['paid', 'paid', 'paid', 'pending']),
-      new Date(date).toISOString(),
-      businessId
-    );
-  }
-  stmtPay.finalize();
+    // 5. PAGOS (Ingresos financieros diversificados y realistas)
+    const stmtPay = db.prepare(`
+      INSERT INTO payment (clientName, businessName, amount, method, date, status, createdAt, businessId)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
 
-  console.log('✅ Data seeded successfully!');
-  console.log('   - 32 usuarios (1 admin + 1 client demo + 30 owners)');
-  console.log('   - 50 negocios (owners con 1-4 negocios cada uno)');
-  console.log('   - ~150 servicios');
-  console.log('   - 200 clientes');
-  console.log('   - 500 citas');
-  console.log('   - 400 pagos');
-  console.log('');
-  console.log('🔑 admin@bookflow.com / admin123!  →  superadmin');
-  console.log('🔑 client1@bookflow.com / client123!  →  cliente');
-  console.log('🔑 owner1@bookings.com / owner123!  →  owner');
+    // Crear pagos realistas basados en citas pagadas o aleatorios de clientes reales
+    for (let i = 0; i < 500; i++) {
+      const app = faker.helpers.arrayElement(appointmentsList);
+      const clientName = clientsMap[app.clientId] || faker.person.fullName();
+      const businessName = businessNames[app.businessId] || 'Negocio';
+      const amount = app.amount;
+      const date = app.date;
+      const status = app.status === 'paid' ? 'paid' : faker.helpers.arrayElement(['paid', 'paid', 'pending']);
+      const method = faker.helpers.arrayElement(['Tarjeta', 'Efectivo', 'Bizum', 'Transferencia']);
+
+      stmtPay.run(
+        clientName,
+        businessName,
+        amount,
+        method,
+        date,
+        status,
+        new Date(date).toISOString(),
+        app.businessId
+      );
+    }
+    stmtPay.finalize();
+
+    console.log('✅ Base de datos resembrada con éxito!');
+    console.log(`   - 232 usuarios en total (1 admin, 1 client demo, 30 owners, 200 clientes crm)`);
+    console.log(`   - 50 negocios reales de los owners`);
+    console.log(`   - 150 servicios con precios consistentes`);
+    console.log(`   - 600 citas totalmente consistentes (customerId == userId)`);
+    console.log(`   - 500 cobros detallados y coherentes`);
+    db.close();
+  });
 });
-
-db.close();
