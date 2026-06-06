@@ -1,10 +1,15 @@
+import { OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Spot } from './spot.entity';
 import { Appointment } from '../appointments/appointment.entity';
-export declare class SpotsService {
+import { Business } from '../businesses/business.entity';
+export declare class SpotsService implements OnModuleInit {
     private readonly spotRepository;
     private readonly appointmentRepository;
-    constructor(spotRepository: Repository<Spot>, appointmentRepository: Repository<Appointment>);
+    private readonly businessRepository;
+    private readonly logger;
+    constructor(spotRepository: Repository<Spot>, appointmentRepository: Repository<Appointment>, businessRepository: Repository<Business>);
+    onModuleInit(): Promise<void>;
     findByBusiness(businessId: number, date?: string, time?: string): Promise<(Spot & {
         available: boolean;
     })[]>;
