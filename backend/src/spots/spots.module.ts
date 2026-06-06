@@ -5,9 +5,13 @@ import { SpotsController } from './spots.controller';
 import { Spot } from './spot.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Business } from '../businesses/business.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Spot, Appointment, Business])],
+  imports: [
+    TypeOrmModule.forFeature([Spot, Appointment, Business]),
+    AuthModule,
+  ],
   controllers: [SpotsController],
   providers: [SpotsService],
   exports: [SpotsService],

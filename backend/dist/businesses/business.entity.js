@@ -35,6 +35,8 @@ let Business = class Business {
     rating;
     reviewsCount;
     isSuspended;
+    mapCols;
+    mapRows;
     createdAt;
     owner;
     services;
@@ -115,6 +117,14 @@ __decorate([
     (0, typeorm_1.Column)({ default: false }),
     __metadata("design:type", Boolean)
 ], Business.prototype, "isSuspended", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 8 }),
+    __metadata("design:type", Number)
+], Business.prototype, "mapCols", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 6 }),
+    __metadata("design:type", Number)
+], Business.prototype, "mapRows", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date', default: () => 'CURRENT_TIMESTAMP' }),
     __metadata("design:type", String)

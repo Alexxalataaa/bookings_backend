@@ -61,6 +61,12 @@ export class Business {
   @Column({ default: false })
   isSuspended: boolean;
 
+  @Column({ default: 8 })
+  mapCols: number;
+
+  @Column({ default: 6 })
+  mapRows: number;
+
   @Column({ type: 'date', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: string;
 

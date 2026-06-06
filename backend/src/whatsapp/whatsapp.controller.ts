@@ -15,7 +15,7 @@ export class WhatsappController {
     @Query('hub.mode') mode: string,
     @Query('hub.verify_token') token: string,
     @Query('hub.challenge') challenge: string,
-    @Res() res: Response,
+    @Res() res: any,
   ) {
     const result = this.whatsappService.verifyWebhook(mode, token, challenge);
     if (result !== null) {
@@ -68,7 +68,7 @@ export class WhatsappController {
   /** Get active sessions for admin panel */
   @Get('sessions')
   @ApiOperation({ summary: 'Get active WhatsApp conversation sessions (admin)' })
-  getSessions() {
+  getSessions(): any[] {
     return this.whatsappService.getActiveSessions();
   }
 }

@@ -88,7 +88,7 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Get active WhatsApp conversation sessions (admin)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Array)
 ], WhatsappController.prototype, "getSessions", null);
 exports.WhatsappController = WhatsappController = __decorate([
     (0, swagger_1.ApiTags)('whatsapp'),

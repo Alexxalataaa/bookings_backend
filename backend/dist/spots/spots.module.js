@@ -14,12 +14,16 @@ const spots_controller_1 = require("./spots.controller");
 const spot_entity_1 = require("./spot.entity");
 const appointment_entity_1 = require("../appointments/appointment.entity");
 const business_entity_1 = require("../businesses/business.entity");
+const auth_module_1 = require("../auth/auth.module");
 let SpotsModule = class SpotsModule {
 };
 exports.SpotsModule = SpotsModule;
 exports.SpotsModule = SpotsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([spot_entity_1.Spot, appointment_entity_1.Appointment, business_entity_1.Business])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([spot_entity_1.Spot, appointment_entity_1.Appointment, business_entity_1.Business]),
+            auth_module_1.AuthModule,
+        ],
         controllers: [spots_controller_1.SpotsController],
         providers: [spots_service_1.SpotsService],
         exports: [spots_service_1.SpotsService],

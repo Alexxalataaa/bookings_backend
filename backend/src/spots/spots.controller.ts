@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SpotsService } from './spots.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Business } from '../businesses/business.entity';
@@ -38,7 +38,7 @@ export class SpotsController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a spot (business admin or superadmin)' })
   async create(@Body() body: any, @Request() req: any) {
@@ -47,7 +47,7 @@ export class SpotsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a spot' })
   async update(
@@ -60,7 +60,7 @@ export class SpotsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a spot' })
   async remove(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
@@ -68,7 +68,6 @@ export class SpotsController {
     return this.spotsService.remove(id, ownerBusinessIds);
   }
 
-  /** Returns list of business IDs owned by the requesting user (or all if superadmin) */
   private async getOwnerBusinessIds(user: any): Promise<number[]> {
     const isSuperadmin = user.role === 'superadmin' || user.username === 'admin';
     if (isSuperadmin) {

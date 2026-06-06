@@ -16,7 +16,7 @@ exports.SpotsController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const spots_service_1 = require("./spots.service");
-const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+const auth_guard_1 = require("../auth/auth.guard");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const business_entity_1 = require("../businesses/business.entity");
@@ -69,7 +69,7 @@ __decorate([
 ], SpotsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Create a spot (business admin or superadmin)' }),
     __param(0, (0, common_1.Body)()),
@@ -80,7 +80,7 @@ __decorate([
 ], SpotsController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Update a spot' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
@@ -92,7 +92,7 @@ __decorate([
 ], SpotsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Delete a spot' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),

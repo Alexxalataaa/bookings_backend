@@ -22,6 +22,8 @@ export declare class Business {
     rating: number;
     reviewsCount: number;
     isSuspended: boolean;
+    mapCols: number;
+    mapRows: number;
     createdAt: string;
     owner: User;
     services: Service[];
