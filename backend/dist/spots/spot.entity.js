@@ -20,6 +20,7 @@ let Spot = class Spot {
     posX;
     posY;
     color;
+    type;
     businessId;
     business;
     appointments;
@@ -49,6 +50,10 @@ __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], Spot.prototype, "color", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 'spot' }),
+    __metadata("design:type", String)
+], Spot.prototype, "type", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Number)

@@ -7,6 +7,7 @@ export declare class Spot {
     posX: number;
     posY: number;
     color: string;
+    type: string;
     businessId: number;
     business: Business;
     appointments: Appointment[];

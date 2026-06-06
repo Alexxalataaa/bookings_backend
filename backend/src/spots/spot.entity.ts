@@ -22,6 +22,9 @@ export class Spot {
   @Column({ nullable: true })
   color: string; // optional custom accent color
 
+  @Column({ default: 'spot' })
+  type: string; // 'spot' or 'wall'
+
   @Column()
   businessId: number;
 
