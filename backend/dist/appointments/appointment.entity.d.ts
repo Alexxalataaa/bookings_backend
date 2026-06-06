@@ -1,6 +1,7 @@
 import { User } from '../auth/user.entity';
 import { Business } from '../businesses/business.entity';
 import { Service } from '../services/service.entity';
+import { Spot } from '../spots/spot.entity';
 export declare enum AppointmentStatus {
     PENDING = "pending",
     CONFIRMED = "confirmed",
@@ -18,4 +19,6 @@ export declare class Appointment {
     user: User;
     business: Business;
     service: Service;
+    spotId: number;
+    spot: Spot;
 }

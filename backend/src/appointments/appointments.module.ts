@@ -10,5 +10,6 @@ import { Business } from '../businesses/business.entity';
   imports: [TypeOrmModule.forFeature([Appointment, Business]), AuthModule],
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
+  exports: [AppointmentsService],
 })
-export class AppointmentsModule {}
+export class AppointmentsModule {}

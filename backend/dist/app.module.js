@@ -18,6 +18,8 @@ const businesses_module_1 = require("./businesses/businesses.module");
 const services_module_1 = require("./services/services.module");
 const logs_module_1 = require("./logs/logs.module");
 const users_module_1 = require("./users/users.module");
+const spots_module_1 = require("./spots/spots.module");
+const whatsapp_module_1 = require("./whatsapp/whatsapp.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -41,6 +43,8 @@ exports.AppModule = AppModule = __decorate([
             notifications_module_1.NotificationsModule,
             logs_module_1.LogsModule,
             users_module_1.UsersModule,
+            spots_module_1.SpotsModule,
+            whatsapp_module_1.WhatsappModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

@@ -3,6 +3,7 @@ import { User } from '../auth/user.entity';
 import { Service } from '../services/service.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Payment } from '../payments/payment.entity';
+import { Spot } from '../spots/spot.entity';
 
 @Entity()
 export class Business {
@@ -74,4 +75,8 @@ export class Business {
 
   @OneToMany(() => Payment, (payment) => payment.business)
   payments: Payment[];
+
+  @OneToMany(() => Spot, (spot) => spot.business)
+  spots: Spot[];
 }
+

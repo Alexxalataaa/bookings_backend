@@ -35,4 +35,9 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsInt()
   serviceId?: number;
-}
+
+  @ApiProperty({ example: 3, required: false, description: 'ID of the visual map spot chosen by the client' })
+  @IsOptional()
+  @IsInt()
+  spotId?: number;
+}

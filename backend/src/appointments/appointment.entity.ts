@@ -2,6 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Business } from '../businesses/business.entity';
 import { Service } from '../services/service.entity';
+import { Spot } from '../spots/spot.entity';
 
 export enum AppointmentStatus {
   PENDING = 'pending',
@@ -44,4 +45,10 @@ export class Appointment {
 
   @ManyToOne(() => Service, (service) => service.appointments, { nullable: true, onDelete: 'SET NULL' })
   service: Service;
+
+  @Column({ nullable: true })
+  spotId: number;
+
+  @ManyToOne(() => Spot, (spot) => spot.appointments, { nullable: true, onDelete: 'SET NULL' })
+  spot: Spot;
 }

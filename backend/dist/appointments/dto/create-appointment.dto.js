@@ -21,6 +21,7 @@ class CreateAppointmentDto {
     businessId;
     serviceName;
     serviceId;
+    spotId;
 }
 exports.CreateAppointmentDto = CreateAppointmentDto;
 __decorate([
@@ -63,4 +64,10 @@ __decorate([
     (0, class_validator_1.IsInt)(),
     __metadata("design:type", Number)
 ], CreateAppointmentDto.prototype, "serviceId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 3, required: false, description: 'ID of the visual map spot chosen by the client' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsInt)(),
+    __metadata("design:type", Number)
+], CreateAppointmentDto.prototype, "spotId", void 0);
 //# sourceMappingURL=create-appointment.dto.js.map

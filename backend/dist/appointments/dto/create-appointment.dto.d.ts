@@ -7,4 +7,5 @@ export declare class CreateAppointmentDto {
     businessId: number;
     serviceName: string;
     serviceId?: number;
+    spotId?: number;
 }

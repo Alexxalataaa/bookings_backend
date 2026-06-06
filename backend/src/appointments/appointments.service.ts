@@ -94,10 +94,13 @@ export class AppointmentsService {
       customerId: finalCustomerId,
       businessId: createAppointmentDto.businessId,
       serviceName: createAppointmentDto.serviceName,
+      spotId: (createAppointmentDto as any).spotId || null,
       user: finalCustomerId ? { id: finalCustomerId } as any : null,
       business: { id: createAppointmentDto.businessId } as any,
       service: (createAppointmentDto as any).serviceId ? { id: (createAppointmentDto as any).serviceId } as any : null,
+      spot: (createAppointmentDto as any).spotId ? { id: (createAppointmentDto as any).spotId } as any : null,
     });
+
 
     const saved = await this.appointmentsRepository.save(appointment);
     this.notificationsGateway.sendNotification('Nueva reserva creada');

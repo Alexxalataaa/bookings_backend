@@ -2,6 +2,7 @@ import { User } from '../auth/user.entity';
 import { Service } from '../services/service.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Payment } from '../payments/payment.entity';
+import { Spot } from '../spots/spot.entity';
 export declare class Business {
     id: number;
     name: string;
@@ -26,4 +27,5 @@ export declare class Business {
     services: Service[];
     appointments: Appointment[];
     payments: Payment[];
+    spots: Spot[];
 }

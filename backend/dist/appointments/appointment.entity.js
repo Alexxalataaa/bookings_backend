@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const user_entity_1 = require("../auth/user.entity");
 const business_entity_1 = require("../businesses/business.entity");
 const service_entity_1 = require("../services/service.entity");
+const spot_entity_1 = require("../spots/spot.entity");
 var AppointmentStatus;
 (function (AppointmentStatus) {
     AppointmentStatus["PENDING"] = "pending";
@@ -32,6 +33,8 @@ let Appointment = class Appointment {
     user;
     business;
     service;
+    spotId;
+    spot;
 };
 exports.Appointment = Appointment;
 __decorate([
@@ -77,6 +80,14 @@ __decorate([
     (0, typeorm_1.ManyToOne)(() => service_entity_1.Service, (service) => service.appointments, { nullable: true, onDelete: 'SET NULL' }),
     __metadata("design:type", service_entity_1.Service)
 ], Appointment.prototype, "service", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", Number)
+], Appointment.prototype, "spotId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => spot_entity_1.Spot, (spot) => spot.appointments, { nullable: true, onDelete: 'SET NULL' }),
+    __metadata("design:type", spot_entity_1.Spot)
+], Appointment.prototype, "spot", void 0);
 exports.Appointment = Appointment = __decorate([
     (0, typeorm_1.Entity)()
 ], Appointment);
