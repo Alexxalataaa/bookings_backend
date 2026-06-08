@@ -20,6 +20,7 @@ const logs_module_1 = require("./logs/logs.module");
 const users_module_1 = require("./users/users.module");
 const spots_module_1 = require("./spots/spots.module");
 const whatsapp_module_1 = require("./whatsapp/whatsapp.module");
+const rewards_module_1 = require("./rewards/rewards.module");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -45,6 +46,7 @@ exports.AppModule = AppModule = __decorate([
             users_module_1.UsersModule,
             spots_module_1.SpotsModule,
             whatsapp_module_1.WhatsappModule,
+            rewards_module_1.RewardsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

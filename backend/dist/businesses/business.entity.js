@@ -16,6 +16,7 @@ const service_entity_1 = require("../services/service.entity");
 const appointment_entity_1 = require("../appointments/appointment.entity");
 const payment_entity_1 = require("../payments/payment.entity");
 const spot_entity_1 = require("../spots/spot.entity");
+const reward_entity_1 = require("../rewards/reward.entity");
 let Business = class Business {
     id;
     name;
@@ -43,6 +44,7 @@ let Business = class Business {
     appointments;
     payments;
     spots;
+    rewards;
 };
 exports.Business = Business;
 __decorate([
@@ -149,6 +151,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => spot_entity_1.Spot, (spot) => spot.business),
     __metadata("design:type", Array)
 ], Business.prototype, "spots", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => reward_entity_1.Reward, (reward) => reward.business),
+    __metadata("design:type", Array)
+], Business.prototype, "rewards", void 0);
 exports.Business = Business = __decorate([
     (0, typeorm_1.Entity)()
 ], Business);

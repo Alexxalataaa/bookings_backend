@@ -11,6 +11,7 @@ import { LogsModule } from './logs/logs.module';
 import { UsersModule } from './users/users.module';
 import { SpotsModule } from './spots/spots.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
+import { RewardsModule } from './rewards/rewards.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -34,6 +35,7 @@ import { AppService } from './app.service';
     UsersModule,
     SpotsModule,
     WhatsappModule,
+    RewardsModule,
   ],
 
   controllers: [AppController],
