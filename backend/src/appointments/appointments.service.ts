@@ -6,6 +6,9 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { Business } from '../businesses/business.entity';
+import { User } from '../auth/user.entity';
+import { Service } from '../services/service.entity';
+import { Spot } from '../spots/spot.entity';
 
 @Injectable()
 export class AppointmentsService {
@@ -14,6 +17,12 @@ export class AppointmentsService {
     private readonly appointmentsRepository: Repository<Appointment>,
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Service)
+    private readonly serviceRepository: Repository<Service>,
+    @InjectRepository(Spot)
+    private readonly spotRepository: Repository<Spot>,
     private readonly notificationsGateway: NotificationsGateway,
   ) { }
 
@@ -81,6 +90,26 @@ export class AppointmentsService {
 
     // Synchronize customerId and user relation
     const finalCustomerId = createAppointmentDto.userId || createAppointmentDto.customerId;
+
+    // Validate related entities exist
+    if (finalCustomerId) {
+      const user = await this.userRepository.findOne({ where: { id: finalCustomerId } });
+      if (!user) {
+        throw new NotFoundException('El cliente (usuario) especificado no existe.');
+      }
+    }
+    if (createAppointmentDto.serviceId) {
+      const service = await this.serviceRepository.findOne({ where: { id: createAppointmentDto.serviceId } });
+      if (!service) {
+        throw new NotFoundException('El servicio especificado no existe.');
+      }
+    }
+    if (createAppointmentDto.spotId) {
+      const spot = await this.spotRepository.findOne({ where: { id: createAppointmentDto.spotId } });
+      if (!spot) {
+        throw new NotFoundException('El spot especificado no existe.');
+      }
+    }
 
     let finalStatus = createAppointmentDto.status;
     if (finalStatus && (finalStatus.toString().toLowerCase() === 'pagada' || finalStatus.toString().toLowerCase() === 'paid')) {

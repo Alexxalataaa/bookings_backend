@@ -14,12 +14,15 @@ const appointments_controller_1 = require("./appointments.controller");
 const appointments_service_1 = require("./appointments.service");
 const auth_module_1 = require("../auth/auth.module");
 const business_entity_1 = require("../businesses/business.entity");
+const user_entity_1 = require("../auth/user.entity");
+const service_entity_1 = require("../services/service.entity");
+const spot_entity_1 = require("../spots/spot.entity");
 let AppointmentsModule = class AppointmentsModule {
 };
 exports.AppointmentsModule = AppointmentsModule;
 exports.AppointmentsModule = AppointmentsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([appointment_entity_1.Appointment, business_entity_1.Business]), auth_module_1.AuthModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([appointment_entity_1.Appointment, business_entity_1.Business, user_entity_1.User, service_entity_1.Service, spot_entity_1.Spot]), auth_module_1.AuthModule],
         controllers: [appointments_controller_1.AppointmentsController],
         providers: [appointments_service_1.AppointmentsService],
         exports: [appointments_service_1.AppointmentsService],

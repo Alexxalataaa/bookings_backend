@@ -4,6 +4,7 @@ import { Service } from '../services/service.entity';
 import { Appointment } from '../appointments/appointment.entity';
 import { Payment } from '../payments/payment.entity';
 import { Spot } from '../spots/spot.entity';
+import { Reward } from '../rewards/reward.entity';
 
 @Entity()
 export class Business {
@@ -84,5 +85,8 @@ export class Business {
 
   @OneToMany(() => Spot, (spot) => spot.business)
   spots: Spot[];
+
+  @OneToMany(() => Reward, (reward) => reward.business)
+  rewards: Reward[];
 }
 

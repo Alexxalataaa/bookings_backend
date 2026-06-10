@@ -2,6 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } f
 import * as crypto from 'crypto';
 import { Business } from '../businesses/business.entity';
 import { Appointment } from '../appointments/appointment.entity';
+import { Reward } from '../rewards/reward.entity';
 
 export function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
@@ -59,4 +60,7 @@ export class User {
 
   @OneToMany(() => Appointment, (appointment) => appointment.user)
   appointments: Appointment[];
+
+  @OneToMany(() => Reward, (reward) => reward.winner)
+  rewards: Reward[];
 }

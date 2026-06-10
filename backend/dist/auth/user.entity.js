@@ -48,6 +48,7 @@ const typeorm_1 = require("typeorm");
 const crypto = __importStar(require("crypto"));
 const business_entity_1 = require("../businesses/business.entity");
 const appointment_entity_1 = require("../appointments/appointment.entity");
+const reward_entity_1 = require("../rewards/reward.entity");
 function hashPassword(password) {
     return crypto.createHash('sha256').update(password).digest('hex');
 }
@@ -64,6 +65,7 @@ let User = class User {
     createdAt;
     businesses;
     appointments;
+    rewards;
 };
 exports.User = User;
 __decorate([
@@ -114,6 +116,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => appointment_entity_1.Appointment, (appointment) => appointment.user),
     __metadata("design:type", Array)
 ], User.prototype, "appointments", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => reward_entity_1.Reward, (reward) => reward.winner),
+    __metadata("design:type", Array)
+], User.prototype, "rewards", void 0);
 exports.User = User = __decorate([
     (0, typeorm_1.Entity)()
 ], User);

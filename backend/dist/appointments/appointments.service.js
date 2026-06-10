@@ -19,13 +19,22 @@ const typeorm_2 = require("typeorm");
 const appointment_entity_1 = require("./appointment.entity");
 const notifications_gateway_1 = require("../notifications/notifications.gateway");
 const business_entity_1 = require("../businesses/business.entity");
+const user_entity_1 = require("../auth/user.entity");
+const service_entity_1 = require("../services/service.entity");
+const spot_entity_1 = require("../spots/spot.entity");
 let AppointmentsService = class AppointmentsService {
     appointmentsRepository;
     businessRepository;
+    userRepository;
+    serviceRepository;
+    spotRepository;
     notificationsGateway;
-    constructor(appointmentsRepository, businessRepository, notificationsGateway) {
+    constructor(appointmentsRepository, businessRepository, userRepository, serviceRepository, spotRepository, notificationsGateway) {
         this.appointmentsRepository = appointmentsRepository;
         this.businessRepository = businessRepository;
+        this.userRepository = userRepository;
+        this.serviceRepository = serviceRepository;
+        this.spotRepository = spotRepository;
         this.notificationsGateway = notificationsGateway;
     }
     async findAll(user, businessId) {
@@ -83,6 +92,24 @@ let AppointmentsService = class AppointmentsService {
             throw new common_1.BadRequestException('No se pueden realizar reservas en un negocio suspendido.');
         }
         const finalCustomerId = createAppointmentDto.userId || createAppointmentDto.customerId;
+        if (finalCustomerId) {
+            const user = await this.userRepository.findOne({ where: { id: finalCustomerId } });
+            if (!user) {
+                throw new common_1.NotFoundException('El cliente (usuario) especificado no existe.');
+            }
+        }
+        if (createAppointmentDto.serviceId) {
+            const service = await this.serviceRepository.findOne({ where: { id: createAppointmentDto.serviceId } });
+            if (!service) {
+                throw new common_1.NotFoundException('El servicio especificado no existe.');
+            }
+        }
+        if (createAppointmentDto.spotId) {
+            const spot = await this.spotRepository.findOne({ where: { id: createAppointmentDto.spotId } });
+            if (!spot) {
+                throw new common_1.NotFoundException('El spot especificado no existe.');
+            }
+        }
         let finalStatus = createAppointmentDto.status;
         if (finalStatus && (finalStatus.toString().toLowerCase() === 'pagada' || finalStatus.toString().toLowerCase() === 'paid')) {
             finalStatus = appointment_entity_1.AppointmentStatus.PAID;
@@ -129,7 +156,13 @@ exports.AppointmentsService = AppointmentsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(appointment_entity_1.Appointment)),
     __param(1, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
+    __param(2, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(3, (0, typeorm_1.InjectRepository)(service_entity_1.Service)),
+    __param(4, (0, typeorm_1.InjectRepository)(spot_entity_1.Spot)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         notifications_gateway_1.NotificationsGateway])
 ], AppointmentsService);

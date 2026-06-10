@@ -1,5 +1,6 @@
 import { Business } from '../businesses/business.entity';
 import { Appointment } from '../appointments/appointment.entity';
+import { Reward } from '../rewards/reward.entity';
 export declare function hashPassword(password: string): string;
 export declare class User {
     id: number;
@@ -14,4 +15,5 @@ export declare class User {
     createdAt: Date;
     businesses: Business[];
     appointments: Appointment[];
+    rewards: Reward[];
 }
