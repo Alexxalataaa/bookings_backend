@@ -4,9 +4,10 @@ import { RewardsController } from './rewards.controller';
 import { RewardsService } from './rewards.service';
 import { Reward } from './reward.entity';
 import { Business } from '../businesses/business.entity';
+import { User } from '../auth/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Reward, Business])],
+  imports: [TypeOrmModule.forFeature([Reward, Business, User])],
   controllers: [RewardsController],
   providers: [RewardsService],
   exports: [RewardsService],

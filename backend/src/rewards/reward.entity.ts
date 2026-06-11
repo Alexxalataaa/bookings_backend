@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Business } from '../businesses/business.entity';
+import { User } from '../auth/user.entity';
 
 @Entity()
 export class Reward {
@@ -23,6 +24,9 @@ export class Reward {
 
   @Column({ type: 'date', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: string;
+
+  @ManyToOne(() => User, { nullable: true, eager: true })
+  winner: User | null;
 
   @ManyToOne(() => Business, (business) => business.rewards, { onDelete: 'CASCADE' })
   business: Business;

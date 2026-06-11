@@ -17,12 +17,12 @@ export class RewardsController {
   }
 
   @Post()
-  create(@Body() data: Partial<Reward> & { businessId: number }): Promise<Reward> {
+  create(@Body() data: Partial<Reward> & { businessId: number; winnerId?: number }): Promise<Reward> {
     return this.rewardsService.create(data);
   }
 
   @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() data: Partial<Reward>): Promise<Reward> {
+  update(@Param('id', ParseIntPipe) id: number, @Body() data: Partial<Reward> & { winnerId?: number | null }): Promise<Reward> {
     return this.rewardsService.update(id, data);
   }
 
