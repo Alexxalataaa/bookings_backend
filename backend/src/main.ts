@@ -48,7 +48,7 @@ async function bootstrap() {
 
   // CORS Configuration
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    origin: ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:3002', 'http://localhost:3005'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -306,10 +306,11 @@ async function bootstrap() {
     }
   });
 
-  await app.listen(3000, () => {
-    console.log('✅ NestJS Backend running on http://localhost:3000');
-    console.log('📚 Swagger Superadmin → http://localhost:3000/api/superadmin  (superadmin / super123)');
-    console.log('📚 Swagger Business   → http://localhost:3000/api/business   (business / biz123)');
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
+  await app.listen(port, () => {
+    console.log(`✅ NestJS Backend running on http://localhost:${port}`);
+    console.log('📚 Swagger Superadmin → http://localhost:${port}/api/superadmin  (superadmin / super123)');
+    console.log('📚 Swagger Business   → http://localhost:${port}/api/business   (business / biz123)');
   });
 }
 bootstrap();
