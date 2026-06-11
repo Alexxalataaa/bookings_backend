@@ -12,13 +12,15 @@ const typeorm_1 = require("@nestjs/typeorm");
 const rewards_controller_1 = require("./rewards.controller");
 const rewards_service_1 = require("./rewards.service");
 const reward_entity_1 = require("./reward.entity");
+const client_progress_entity_1 = require("./client-progress.entity");
 const business_entity_1 = require("../businesses/business.entity");
+const user_entity_1 = require("../auth/user.entity");
 let RewardsModule = class RewardsModule {
 };
 exports.RewardsModule = RewardsModule;
 exports.RewardsModule = RewardsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([reward_entity_1.Reward, business_entity_1.Business])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([reward_entity_1.Reward, client_progress_entity_1.ClientProgress, business_entity_1.Business, user_entity_1.User])],
         controllers: [rewards_controller_1.RewardsController],
         providers: [rewards_service_1.RewardsService],
         exports: [rewards_service_1.RewardsService],

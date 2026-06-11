@@ -35,6 +35,7 @@ let Appointment = class Appointment {
     service;
     spotId;
     spot;
+    pointsAwarded;
 };
 exports.Appointment = Appointment;
 __decorate([
@@ -88,6 +89,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)(() => spot_entity_1.Spot, (spot) => spot.appointments, { nullable: true, onDelete: 'SET NULL' }),
     __metadata("design:type", spot_entity_1.Spot)
 ], Appointment.prototype, "spot", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], Appointment.prototype, "pointsAwarded", void 0);
 exports.Appointment = Appointment = __decorate([
     (0, typeorm_1.Entity)()
 ], Appointment);

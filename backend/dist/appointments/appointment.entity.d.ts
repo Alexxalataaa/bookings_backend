@@ -21,4 +21,5 @@ export declare class Appointment {
     service: Service;
     spotId: number;
     spot: Spot;
+    pointsAwarded: boolean;
 }

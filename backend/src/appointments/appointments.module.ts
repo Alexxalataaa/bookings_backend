@@ -5,9 +5,10 @@ import { AppointmentsController } from './appointments.controller';
 import { AppointmentsService } from './appointments.service';
 import { AuthModule } from '../auth/auth.module';
 import { Business } from '../businesses/business.entity';
+import { RewardsModule } from '../rewards/rewards.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Appointment, Business]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Appointment, Business]), AuthModule, RewardsModule],
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
   exports: [AppointmentsService],

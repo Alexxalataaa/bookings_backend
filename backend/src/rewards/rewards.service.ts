@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { Reward } from './reward.entity';
 import { Business } from '../businesses/business.entity';
 import { User } from '../auth/user.entity';
+import { ClientProgress } from './client-progress.entity';
 
 @Injectable()
 export class RewardsService {
   constructor(
     @InjectRepository(Reward)
     private rewardsRepo: Repository<Reward>,
+    @InjectRepository(ClientProgress)
+    private progressRepo: Repository<ClientProgress>,
     @InjectRepository(Business)
     private businessRepo: Repository<Business>,
     @InjectRepository(User)
@@ -73,5 +76,49 @@ export class RewardsService {
   async delete(id: number): Promise<void> {
     const result = await this.rewardsRepo.delete(id);
     if (result.affected === 0) throw new NotFoundException('Reward not found');
+  }
+
+  async getClientProgress(businessId: number, userId: number): Promise<{ points: number }> {
+    const progress = await this.progressRepo.findOne({
+      where: { business: { id: businessId }, user: { id: userId } },
+    });
+    return { points: progress ? progress.points : 0 };
+  }
+
+  async getAllClientProgress(userId: number): Promise<ClientProgress[]> {
+    return this.progressRepo.find({
+      where: { user: { id: userId } },
+      relations: ['business'],
+    });
+  }
+
+  async addPoints(businessId: number, userId: number, pointsToAdd: number): Promise<ClientProgress> {
+    let progress = await this.progressRepo.findOne({
+      where: { business: { id: businessId }, user: { id: userId } },
+    });
+
+    if (!progress) {
+      progress = this.progressRepo.create({
+        business: { id: businessId } as any,
+        user: { id: userId } as any,
+        points: pointsToAdd,
+      });
+    } else {
+      progress.points += pointsToAdd;
+      progress.updatedAt = new Date().toISOString();
+    }
+
+    return this.progressRepo.save(progress);
+  }
+
+  async getUnlockedRewards(businessId: number, userId: number): Promise<Reward[]> {
+    const progress = await this.getClientProgress(businessId, userId);
+    if (progress.points === 0) return [];
+
+    const activeRewards = await this.rewardsRepo.find({
+      where: { business: { id: businessId }, isActive: true },
+    });
+
+    return activeRewards.filter(r => r.pointsRequired && progress.points >= r.pointsRequired);
   }
 }

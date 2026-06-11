@@ -6,6 +6,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { Business } from '../businesses/business.entity';
+import { RewardsService } from '../rewards/rewards.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -15,6 +16,7 @@ export class AppointmentsService {
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
     private readonly notificationsGateway: NotificationsGateway,
+    private readonly rewardsService: RewardsService,
   ) { }
 
   async findAll(user: { userId: number; role: string; username: string }, businessId?: number) {
@@ -102,7 +104,15 @@ export class AppointmentsService {
     });
 
 
-    const saved = await this.appointmentsRepository.save(appointment);
+    let saved = await this.appointmentsRepository.save(appointment);
+    
+    // Award 10 points if paid
+    if (saved.status === AppointmentStatus.PAID && !saved.pointsAwarded && finalCustomerId) {
+      await this.rewardsService.addPoints(saved.businessId, finalCustomerId, 10);
+      saved.pointsAwarded = true;
+      saved = await this.appointmentsRepository.save(saved);
+    }
+
     this.notificationsGateway.sendNotification('Nueva reserva creada');
     return saved;
   }
@@ -119,10 +129,18 @@ export class AppointmentsService {
       updateAppointmentDto as any,
     );
 
-    const saved = await this.appointmentsRepository.save(updatedAppointment);
+    let saved = await this.appointmentsRepository.save(updatedAppointment);
     if (saved.status && (saved.status.toString().toLowerCase() === 'pagada' || saved.status.toString().toLowerCase() === 'paid')) {
       saved.status = AppointmentStatus.PAID;
     }
+
+    // Award 10 points if paid and not yet awarded
+    if (saved.status === AppointmentStatus.PAID && !saved.pointsAwarded && saved.user?.id) {
+      await this.rewardsService.addPoints(saved.business?.id || saved.businessId, saved.user.id, 10);
+      saved.pointsAwarded = true;
+      saved = await this.appointmentsRepository.save(saved);
+    }
+
     this.notificationsGateway.sendNotification('Reserva actualizada');
     return saved;
   }

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Reward = void 0;
 const typeorm_1 = require("typeorm");
 const business_entity_1 = require("../businesses/business.entity");
+const user_entity_1 = require("../auth/user.entity");
 let Reward = class Reward {
     id;
     name;
@@ -20,6 +21,7 @@ let Reward = class Reward {
     pointsRequired;
     isActive;
     createdAt;
+    winner;
     business;
 };
 exports.Reward = Reward;
@@ -51,6 +53,10 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'date', default: () => 'CURRENT_TIMESTAMP' }),
     __metadata("design:type", String)
 ], Reward.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { nullable: true, eager: true }),
+    __metadata("design:type", Object)
+], Reward.prototype, "winner", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => business_entity_1.Business, (business) => business.rewards, { onDelete: 'CASCADE' }),
     __metadata("design:type", business_entity_1.Business)

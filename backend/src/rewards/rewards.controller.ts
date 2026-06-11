@@ -11,6 +11,29 @@ export class RewardsController {
     return this.rewardsService.findAll(businessId ? parseInt(businessId, 10) : undefined);
   }
 
+  @Get('my-progress')
+  getMyProgress(
+    @Query('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.rewardsService.getAllClientProgress(userId);
+  }
+
+  @Get('progress')
+  getProgress(
+    @Query('businessId', ParseIntPipe) businessId: number,
+    @Query('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.rewardsService.getClientProgress(businessId, userId);
+  }
+
+  @Get('unlocked')
+  getUnlocked(
+    @Query('businessId', ParseIntPipe) businessId: number,
+    @Query('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.rewardsService.getUnlockedRewards(businessId, userId);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<Reward> {
     return this.rewardsService.findOne(id);

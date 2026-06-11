@@ -51,4 +51,7 @@ export class Appointment {
 
   @ManyToOne(() => Spot, (spot) => spot.appointments, { nullable: true, onDelete: 'SET NULL' })
   spot: Spot;
+
+  @Column({ default: false })
+  pointsAwarded: boolean;
 }

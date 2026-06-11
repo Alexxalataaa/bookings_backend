@@ -18,25 +18,31 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const reward_entity_1 = require("./reward.entity");
 const business_entity_1 = require("../businesses/business.entity");
+const user_entity_1 = require("../auth/user.entity");
+const client_progress_entity_1 = require("./client-progress.entity");
 let RewardsService = class RewardsService {
     rewardsRepo;
+    progressRepo;
     businessRepo;
-    constructor(rewardsRepo, businessRepo) {
+    userRepo;
+    constructor(rewardsRepo, progressRepo, businessRepo, userRepo) {
         this.rewardsRepo = rewardsRepo;
+        this.progressRepo = progressRepo;
         this.businessRepo = businessRepo;
+        this.userRepo = userRepo;
     }
     async findAll(businessId) {
         if (businessId) {
             return this.rewardsRepo.find({
                 where: { business: { id: businessId } },
-                relations: ['business'],
+                relations: ['business', 'winner'],
                 order: { createdAt: 'DESC' },
             });
         }
-        return this.rewardsRepo.find({ relations: ['business'], order: { createdAt: 'DESC' } });
+        return this.rewardsRepo.find({ relations: ['business', 'winner'], order: { createdAt: 'DESC' } });
     }
     async findOne(id) {
-        const reward = await this.rewardsRepo.findOne({ where: { id }, relations: ['business'] });
+        const reward = await this.rewardsRepo.findOne({ where: { id }, relations: ['business', 'winner'] });
         if (!reward)
             throw new common_1.NotFoundException('Reward not found');
         return reward;
@@ -45,15 +51,34 @@ let RewardsService = class RewardsService {
         const business = await this.businessRepo.findOne({ where: { id: data.businessId } });
         if (!business)
             throw new common_1.NotFoundException('Business not found');
+        const { winnerId, ...payload } = data;
         const reward = this.rewardsRepo.create({
-            ...data,
+            ...payload,
             business,
         });
+        if (winnerId !== undefined && winnerId !== null) {
+            const winner = await this.userRepo.findOne({ where: { id: winnerId } });
+            if (!winner)
+                throw new common_1.NotFoundException('Winner user not found');
+            reward.winner = winner;
+        }
         return this.rewardsRepo.save(reward);
     }
     async update(id, data) {
         const reward = await this.findOne(id);
-        Object.assign(reward, data);
+        const { winnerId, ...payload } = data;
+        if ('winnerId' in data) {
+            if (winnerId === null) {
+                reward.winner = null;
+            }
+            else if (winnerId !== undefined) {
+                const winner = await this.userRepo.findOne({ where: { id: winnerId } });
+                if (!winner)
+                    throw new common_1.NotFoundException('Winner user not found');
+                reward.winner = winner;
+            }
+        }
+        Object.assign(reward, payload);
         return this.rewardsRepo.save(reward);
     }
     async delete(id) {
@@ -61,13 +86,55 @@ let RewardsService = class RewardsService {
         if (result.affected === 0)
             throw new common_1.NotFoundException('Reward not found');
     }
+    async getClientProgress(businessId, userId) {
+        const progress = await this.progressRepo.findOne({
+            where: { business: { id: businessId }, user: { id: userId } },
+        });
+        return { points: progress ? progress.points : 0 };
+    }
+    async getAllClientProgress(userId) {
+        return this.progressRepo.find({
+            where: { user: { id: userId } },
+            relations: ['business'],
+        });
+    }
+    async addPoints(businessId, userId, pointsToAdd) {
+        let progress = await this.progressRepo.findOne({
+            where: { business: { id: businessId }, user: { id: userId } },
+        });
+        if (!progress) {
+            progress = this.progressRepo.create({
+                business: { id: businessId },
+                user: { id: userId },
+                points: pointsToAdd,
+            });
+        }
+        else {
+            progress.points += pointsToAdd;
+            progress.updatedAt = new Date().toISOString();
+        }
+        return this.progressRepo.save(progress);
+    }
+    async getUnlockedRewards(businessId, userId) {
+        const progress = await this.getClientProgress(businessId, userId);
+        if (progress.points === 0)
+            return [];
+        const activeRewards = await this.rewardsRepo.find({
+            where: { business: { id: businessId }, isActive: true },
+        });
+        return activeRewards.filter(r => r.pointsRequired && progress.points >= r.pointsRequired);
+    }
 };
 exports.RewardsService = RewardsService;
 exports.RewardsService = RewardsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(reward_entity_1.Reward)),
-    __param(1, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
+    __param(1, (0, typeorm_1.InjectRepository)(client_progress_entity_1.ClientProgress)),
+    __param(2, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
+    __param(3, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], RewardsService);
 //# sourceMappingURL=rewards.service.js.map

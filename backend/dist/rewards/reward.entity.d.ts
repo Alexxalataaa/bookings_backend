@@ -1,4 +1,5 @@
 import { Business } from '../businesses/business.entity';
+import { User } from '../auth/user.entity';
 export declare class Reward {
     id: number;
     name: string;
@@ -7,5 +8,6 @@ export declare class Reward {
     pointsRequired: number;
     isActive: boolean;
     createdAt: string;
+    winner: User | null;
     business: Business;
 }

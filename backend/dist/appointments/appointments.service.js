@@ -19,14 +19,17 @@ const typeorm_2 = require("typeorm");
 const appointment_entity_1 = require("./appointment.entity");
 const notifications_gateway_1 = require("../notifications/notifications.gateway");
 const business_entity_1 = require("../businesses/business.entity");
+const rewards_service_1 = require("../rewards/rewards.service");
 let AppointmentsService = class AppointmentsService {
     appointmentsRepository;
     businessRepository;
     notificationsGateway;
-    constructor(appointmentsRepository, businessRepository, notificationsGateway) {
+    rewardsService;
+    constructor(appointmentsRepository, businessRepository, notificationsGateway, rewardsService) {
         this.appointmentsRepository = appointmentsRepository;
         this.businessRepository = businessRepository;
         this.notificationsGateway = notificationsGateway;
+        this.rewardsService = rewardsService;
     }
     async findAll(user, businessId) {
         const isSuperadmin = user.username === 'admin' || user.role === 'superadmin';
@@ -100,7 +103,12 @@ let AppointmentsService = class AppointmentsService {
             service: createAppointmentDto.serviceId ? { id: createAppointmentDto.serviceId } : null,
             spot: createAppointmentDto.spotId ? { id: createAppointmentDto.spotId } : null,
         });
-        const saved = await this.appointmentsRepository.save(appointment);
+        let saved = await this.appointmentsRepository.save(appointment);
+        if (saved.status === appointment_entity_1.AppointmentStatus.PAID && !saved.pointsAwarded && finalCustomerId) {
+            await this.rewardsService.addPoints(saved.businessId, finalCustomerId, 10);
+            saved.pointsAwarded = true;
+            saved = await this.appointmentsRepository.save(saved);
+        }
         this.notificationsGateway.sendNotification('Nueva reserva creada');
         return saved;
     }
@@ -110,9 +118,14 @@ let AppointmentsService = class AppointmentsService {
             updateAppointmentDto.status = appointment_entity_1.AppointmentStatus.PAID;
         }
         const updatedAppointment = this.appointmentsRepository.merge(appointment, updateAppointmentDto);
-        const saved = await this.appointmentsRepository.save(updatedAppointment);
+        let saved = await this.appointmentsRepository.save(updatedAppointment);
         if (saved.status && (saved.status.toString().toLowerCase() === 'pagada' || saved.status.toString().toLowerCase() === 'paid')) {
             saved.status = appointment_entity_1.AppointmentStatus.PAID;
+        }
+        if (saved.status === appointment_entity_1.AppointmentStatus.PAID && !saved.pointsAwarded && saved.user?.id) {
+            await this.rewardsService.addPoints(saved.business?.id || saved.businessId, saved.user.id, 10);
+            saved.pointsAwarded = true;
+            saved = await this.appointmentsRepository.save(saved);
         }
         this.notificationsGateway.sendNotification('Reserva actualizada');
         return saved;
@@ -131,6 +144,7 @@ exports.AppointmentsService = AppointmentsService = __decorate([
     __param(1, (0, typeorm_1.InjectRepository)(business_entity_1.Business)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        notifications_gateway_1.NotificationsGateway])
+        notifications_gateway_1.NotificationsGateway,
+        rewards_service_1.RewardsService])
 ], AppointmentsService);
 //# sourceMappingURL=appointments.service.js.map

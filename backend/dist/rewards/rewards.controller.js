@@ -23,6 +23,15 @@ let RewardsController = class RewardsController {
     findAll(businessId) {
         return this.rewardsService.findAll(businessId ? parseInt(businessId, 10) : undefined);
     }
+    getMyProgress(userId) {
+        return this.rewardsService.getAllClientProgress(userId);
+    }
+    getProgress(businessId, userId) {
+        return this.rewardsService.getClientProgress(businessId, userId);
+    }
+    getUnlocked(businessId, userId) {
+        return this.rewardsService.getUnlockedRewards(businessId, userId);
+    }
     findOne(id) {
         return this.rewardsService.findOne(id);
     }
@@ -44,6 +53,29 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], RewardsController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('my-progress'),
+    __param(0, (0, common_1.Query)('userId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], RewardsController.prototype, "getMyProgress", null);
+__decorate([
+    (0, common_1.Get)('progress'),
+    __param(0, (0, common_1.Query)('businessId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)('userId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], RewardsController.prototype, "getProgress", null);
+__decorate([
+    (0, common_1.Get)('unlocked'),
+    __param(0, (0, common_1.Query)('businessId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Query)('userId', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:returntype", void 0)
+], RewardsController.prototype, "getUnlocked", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
