@@ -20,6 +20,7 @@ let Reward = class Reward {
     validUntil;
     pointsRequired;
     isActive;
+    visibility;
     createdAt;
     winner;
     business;
@@ -49,6 +50,10 @@ __decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
 ], Reward.prototype, "isActive", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 'public' }),
+    __metadata("design:type", String)
+], Reward.prototype, "visibility", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date', default: () => 'CURRENT_TIMESTAMP' }),
     __metadata("design:type", String)

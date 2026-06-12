@@ -7,6 +7,7 @@ export declare class Reward {
     validUntil: string;
     pointsRequired: number;
     isActive: boolean;
+    visibility: string;
     createdAt: string;
     winner: User | null;
     business: Business;

@@ -22,6 +22,9 @@ export class Reward {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: 'public' })
+  visibility: string; // 'public' | 'clients_only'
+
   @Column({ type: 'date', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: string;
 
